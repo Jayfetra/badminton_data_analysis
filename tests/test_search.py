@@ -116,7 +116,7 @@ def test_special_characters_never_raise_and_are_not_forwarded_raw(client: FakeAp
     assert result.status in {"found", "ambiguous", "not_found"}
     for params in client.calls_to("vue-popular-players"):
         key = params["searchKey"]
-        assert key.isalnum() and key == key.lower()
+        assert key.replace(" ", "").isalnum() and key == key.lower()
 
 
 def test_control_characters_are_stripped(client: FakeApiClient) -> None:
@@ -146,3 +146,13 @@ def test_cloudflare_block_propagates() -> None:
 
     with pytest.raises(BlockedByCloudflareError):
         search_player("jonatan christie", Blocked())
+
+
+def test_server_queries_are_contiguous_phrases_longest_first() -> None:
+    from bwf_player.search import _server_queries
+
+    assert _server_queries("tai tzu ying", 3) == ["tai tzu ying", "tzu ying", "tai tzu"]
+    assert _server_queries("kento momota", 1) == ["kento momota"]
+    assert _server_queries("a", 5) == []
+    assert _server_queries("a b", 5) == ["a b"]
+    assert _server_queries("li", 5) == ["li"]

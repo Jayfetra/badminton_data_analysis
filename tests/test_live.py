@@ -38,3 +38,10 @@ def test_live_player_missing_from_index(client: BwfHttpClient) -> None:
     result = search_player("Kento Momota", client)
     assert result.status == "found"
     assert result.best_match.player_id == "89785"
+
+
+def test_live_reversed_name_and_common_word(client: BwfHttpClient) -> None:
+    """'ying' alone returns too many players to page through; phrases must be used."""
+    result = search_player("Tai Tzu Ying", client)
+    assert result.status == "found"
+    assert result.best_match.player_id == "61427"

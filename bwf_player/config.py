@@ -29,5 +29,5 @@ class BwfConfig(BaseModel):
     ambiguity_margin: float = Field(default=5.0, ge=0, le=100)
     max_candidates: int = Field(default=5, ge=1)
     max_query_length: int = Field(default=100, ge=1)
-    search_max_tokens: int = Field(default=2, ge=1)
+    search_max_queries: int = Field(default=3, ge=1)
     search_max_pages: int = Field(default=2, ge=1)

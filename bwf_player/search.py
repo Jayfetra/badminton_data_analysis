@@ -64,8 +64,8 @@ def search_player(name: str, client: BwfHttpClient | None = None) -> SearchResul
         hits[hit.player_id] = hit
 
     if not _has_exact_match(hits):
-        for token in _server_tokens(q_norm, cfg.search_max_tokens):
-            for hit in _server_hits(client, token, q_norm):
+        for phrase in _server_queries(q_norm, cfg.search_max_queries):
+            for hit in _server_hits(client, phrase, q_norm):
                 known = hits.get(hit.player_id)
                 hit.score = max(hit.score, known.score) if known else hit.score
                 hits[hit.player_id] = hit
@@ -127,10 +127,10 @@ def _index_hits(client: BwfHttpClient, q_norm: str) -> list[_Hit]:
     return hits
 
 
-def _server_hits(client: BwfHttpClient, token: str, q_norm: str) -> list[_Hit]:
+def _server_hits(client: BwfHttpClient, phrase: str, q_norm: str) -> list[_Hit]:
     hits: list[_Hit] = []
     for page in range(1, client.config.search_max_pages + 1):
-        payload = client.get_json(SEARCH_ENDPOINT, {"searchKey": token, "activeTab": 1, "page": page})
+        payload = client.get_json(SEARCH_ENDPOINT, {"searchKey": phrase, "activeTab": 1, "page": page})
         for item in _results(payload):
             player_id, name = item.get("id"), item.get("name_display")
             if player_id is None or not isinstance(name, str):
@@ -152,8 +152,20 @@ def _has_next_page(payload: Any) -> bool:
     return isinstance(pagination, dict) and bool(pagination.get("next_page_url"))
 
 
-def _server_tokens(q_norm: str, limit: int) -> list[str]:
-    unique = dict.fromkeys(t for t in q_norm.split() if len(t) >= 2)
+def _server_queries(q_norm: str, limit: int) -> list[str]:
+    """Contiguous word sequences of the query, longest first.
+
+    The server matches a contiguous substring of the display name, whose word order differs
+    from the user's ("Tzu Ying TAI" vs "Tai Tzu Ying"). Long phrases are selective; single
+    common words ("ying") return more players than we page through.
+    """
+    words = q_norm.split()
+    phrases = (
+        " ".join(words[i : i + size])
+        for size in range(len(words), 0, -1)
+        for i in range(len(words) - size + 1)
+    )
+    unique = dict.fromkeys(p for p in phrases if len(p) >= 2)
     return sorted(unique, key=len, reverse=True)[:limit]
 
 

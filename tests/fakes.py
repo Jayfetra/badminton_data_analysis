@@ -24,6 +24,13 @@ class FakeApiClient:
         self.calls: list[tuple[str, dict[str, Any]]] = []
         self._index = load_fixture("h2h_players_index.json")
         self._players: dict[str, dict[str, Any]] = {}
+        # Common name parts return many unrelated players on the real site (30 per page), and
+        # the player we want is not necessarily on the first pages. Decoys therefore come first.
+        for word in ("Ying", "Tai"):
+            for i in range(80):
+                pid = f"9{word}{i}"
+                self._players[pid] = {"id": pid, "slug": f"{word.lower()}-decoy-{i}",
+                                      "name_display": f"{word} Decoy{i}", "country_model": None}
         for name in ("popular_christie.json", "popular_momota.json", "popular_tzu_ying.json"):
             for item in load_fixture(name)["results"]:
                 self._players[item["id"]] = item
@@ -36,7 +43,10 @@ class FakeApiClient:
         if endpoint == "vue-popular-players":
             key = str(params.get("searchKey", "")).lower()
             matches = [p for p in self._players.values() if key in p["name_display"].lower()]
-            return {"results": matches if params.get("page", 1) == 1 else [], "pagination": {}}
+            page, size = int(params.get("page", 1)), 30
+            chunk = matches[(page - 1) * size : page * size]
+            more = len(matches) > page * size
+            return {"results": chunk, "pagination": {"next_page_url": "next" if more else None}}
         raise AssertionError(f"unexpected endpoint {endpoint}")
 
     def calls_to(self, endpoint: str) -> list[dict[str, Any]]:

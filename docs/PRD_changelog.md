@@ -16,6 +16,12 @@
 - Offline (`pytest`): 63 tests. Exact, case, whitespace, accents, reversed order, typo, hyphenated, partial (ambiguous), player missing from index (server fallback), not found, empty/None/non-text, special characters and injection strings, control characters, over-long input, configurable threshold, Cloudflare block propagation, zero-request repeat lookups. HTTP client: bootstrap once, headers, cache hit/expiry/disabled/corrupt, throttling, retry/backoff, `Retry-After`, give-up, block not retried, plain 403 not a block, non-JSON, params never in URL.
 - Live (`pytest -m live`): 3 tests passed (exact name, typo + reversed order, player absent from index).
 
+**Follow-up fix (same iteration, found by running the tool live)**
+- "Tai Tzu Ying" returned `not_found`: the server stage queried single words (`ying`, `tai`), which return more players than the 2 pages fetched, and the site stores her as "Tzu Ying TAI". The offline fixture was too small to expose this.
+- Fix: the server stage now queries contiguous phrases of the query, longest first. Config `search_max_tokens` was renamed `search_max_queries` (default 3; introduced in this iteration, so nothing depended on the old name).
+- Tests: the fake server now paginates (30/page) and holds 160 decoy players placed ahead of the real ones, so the old behaviour fails; added a phrase-generation unit test and a live test. Live: Tai Tzu Ying, Carolina Marin and "Yu Fei Chen" (stored as "CHEN Yu Fei") now resolve.
+- Totals after the fix: 64 offline tests, 4 live tests, all passing.
+
 **Findings recorded in PRD_master.md**
 - `vue-popular-players`: strict substring; `activeTab=0` returns 500. `vue-h2h-players`: ignores `searchKey`, returns 3,429 players, incomplete (Momota, Tai Tzu Ying, Carolina Marin missing). `/player/{id}/` redirects to the canonical slug.
 - Known limitation: typos inside single-word partial names are not matched.
