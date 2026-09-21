@@ -1,5 +1,35 @@
 # PRD Changelog
 
+## Iteration 8 — 2026-09-21 (end-to-end history download, notebook, README, full regression)
+
+**What changed**
+- Added `bwf_player/history.py`: `download_player_history(player, client=None, *, since, until, today, db_path, export_dir, export, progress)` (name or id -> tournaments -> matches -> SQLite -> CSV) returning a `HistorySummary`, and `format_history` (text report). New model `HistorySummary` in `models.py`; `bwf_player` now also exports `download_player_history`, `format_history`, `HistorySummary`, `HistoryStore` and `BwfHttpClient`.
+- Added `scripts/download_history.py`: the same download from the command line (`--since`, `--until`, `--db`, `--out`, `--no-csv`, `--no-matches`; exit code 0 downloaded, 2 nothing found or nothing in the window, 1 invalid input or failure).
+- Notebook: new section 4 (download, then read the saved data back with the standard library); imports moved to the first cell; committed **with its executed outputs** from a real run (`scripts/execute_notebook.py`, 8 code cells, no errors).
+- README rewritten as the final user documentation (history first: one call, real output, cost, failure behaviour, the saved data and CSV columns, step-by-step API, limitations, test counts).
+- PRD_master: version 2.0, design notes, risk 5 (request volume), open question 9, status and differences from the plan, stale statements corrected (below).
+- Earlier-iteration code touched: additions only (`__init__.py`, `models.py`). No behaviour of R1-R7 changed.
+
+**Why**
+- The user asked for the last year's tournaments of a player with results, partners and per-game scores. Iterations 5-7 built the parts; this one connects them so a single call (or command, or notebook cell) does the whole job and reports whether the result can be trusted.
+- Failing fast (instead of skipping a failed event) was chosen because a Cloudflare block must stop the run at once, and a network outage would otherwise cost minutes of retries per event; saving each event as it arrives and the HTTP cache make a re-run cheap.
+
+**What was tested (`test_results/latest.txt`, final regression)**
+- Offline: **553 passed** (508 before; 45 new: 36 in `tests/test_history.py`, 8 in `tests/test_script.py`, 1 in `tests/test_notebook.py`). Highlights: Christie's whole year from fixtures (19 tournaments, 58 matches, 138 games, all totals agree; exact requests made; database and CSV written where configured); running twice leaves every table identical; id and name inputs; bad ids make no request; ambiguous or unknown names and an empty window download and create nothing; a doubles title run, a bye and a walkover; a dropped match is reported (`all_totals_agree` False, named event, note); **a Cloudflare block on the fifth match request keeps the earlier events and a re-run gives a database identical to an uninterrupted run**; the text report checked line by line; the command line (exit codes 0/1/2, options, progress on stderr, bad dates).
+- Live: **15 passed** (1 new): "jonathan cristie" end to end from the real site (at least 10 tournaments and 30 matches, all events reproduce the site's totals), then a second run with the network wrapper counting calls: **zero requests**, database unchanged. Total 118 s.
+- Notebook executed end to end in a real kernel: 8 code cells, no errors. Real result: 19 tournaments, 58 matches, 138 games, all 19 events reproduce the site's totals.
+- **Fresh environment:** the current tree was copied to a temporary folder, installed into a new virtual environment (`pip install -e ".[dev]"`) and its offline suite run there: 553 passed.
+
+**Corrections of earlier statements (found while checking for stale text)**
+- PRD risk 4 said 11 live tests / about 60 s (from Iteration 5); it is now 15 tests, about 2 minutes.
+- PRD section 10 said the end-to-end function was to come in Iteration 8, and the status paragraph repeated the R7 sentence; both rewritten.
+- The plan said the notebook extra would gain `pandas`. It did not: the notebook uses `sqlite3` from the standard library, keeping the install light (README shows the `pandas.read_sql` one-liner). The plan called the command line optional; it was added.
+
+**Findings / still open**
+- Still awaiting the user: the window rule (tournaments that overlap the window count; PRD section 8, item 8) and which ranking events to report (item 5).
+- The terms and conditions of bwfbadminton.com remain unreviewed (item 2 and new item 9), which matters more now that a history costs 25-40 requests instead of about 5.
+- One player per call by design; no batch mode.
+
 ## Iteration 7 — 2026-09-21 (R7: SQLite storage and CSV export)
 
 **What changed**

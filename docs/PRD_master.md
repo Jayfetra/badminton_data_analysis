@@ -1,6 +1,6 @@
 # PRD Master — BWF Player Lookup
 
-**Version:** 1.3 (Iteration 7: SQLite storage and CSV export, R7) · **Last updated:** 2026-09-21
+**Version:** 2.0 (Iteration 8: one-call history download, notebook, README, full regression; R1-R7 complete) · **Last updated:** 2026-09-21
 
 Single source of truth for requirements, architecture decisions, data schema and open questions.
 
@@ -17,6 +17,8 @@ Given a badminton player's name, retrieve profile and ranking data from bwfbadmi
 | R5 | For each match: the player's partner and the opponent(s). **Done (Iteration 6).** |
 | R6 | For each match: round, date, outcome, status and the points of every game. **Done (Iteration 6).** |
 | R7 | Save everything to SQLite (re-runnable) and export CSV. **Done (Iteration 7).** |
+
+R4-R7 are combined in one call, `download_player_history(name or id)` (Iteration 8), also available as `scripts/download_history.py` and in the notebook (section 4).
 
 Out of scope: anything not listed above.
 
@@ -61,7 +63,9 @@ Method: `curl` with a browser User-Agent, inspecting page source and the inline 
    - Decision (user, 2026-09-21): plain `requests` client, no headless-browser fallback. The risk is documented, not engineered around. Reconsider if blocks prove persistent.
 2. **ToS unverified (medium).** See section 2.
 3. **Unofficial API (medium).** Field names and endpoints may change. Parsers are isolated in their own modules and tested against saved fixtures so drift is easy to spot.
-4. **Live testing.** The block observed in Iteration 0 lifted within a day. Since then the live smoke suite (11 tests after Iteration 5, about 60 s; the figure of 8 tests / 40 s written here earlier had already gone stale at 9 tests in Iteration 4; requests are 2.5 s apart, custom `Mozilla/5.0 (compatible; bwf-player-lookup/...)` User-Agent) and repeated notebook runs have caused no block. Run the live suite sparingly.
+4. **Live testing.** The block observed in Iteration 0 lifted within a day. Since then the live smoke suite (15 tests after Iteration 8, about 2 minutes; earlier versions of this line said 8 tests / 40 s, which had already gone stale at 9 tests in Iteration 4, then 11 in Iteration 5; requests are 2.5 s apart, custom `Mozilla/5.0 (compatible; bwf-player-lookup/...)` User-Agent) and repeated notebook runs have caused no block. Run the live suite sparingly.
+
+5. **Request volume of the history download (medium).** A lookup costs about 5 requests once the index is cached; a history download costs about 25-40 (two years, up to four calendar pages, one per event entered; a doubles player entering several events per tournament needs more). The pacing (2.5 s), the cache and the stop-on-block behaviour are the mitigations. It is one player per call on purpose; a loop over many players is not supported and would raise the Cloudflare and terms-of-service risks above.
 
 ## 4. Architecture
 
@@ -71,7 +75,7 @@ Notebook is a thin interface over the `bwf_player` package.
 bwf_player/
   config.py       BwfConfig (pydantic): thresholds, rate limit, cache, URLs, timeouts
   exceptions.py   BwfClientError, BlockedByCloudflareError, InvalidInputError
-  models.py       PlayerCandidate, SearchResult, PlayerProfile, PlayerRanking, PlayerResult, TournamentEntry, TournamentHistory, PlayerMatch, GameScore, MatchPlayer, EventMatches
+  models.py       PlayerCandidate, SearchResult, PlayerProfile, PlayerRanking, PlayerResult, TournamentEntry, TournamentHistory, PlayerMatch, GameScore, MatchPlayer, EventMatches, HistorySummary
   http_client.py  session bootstrap, rate limit, retry/backoff, disk cache, block detection
   names.py        query sanitizing, name normalization, slug derivation, player-id validation
   search.py       R1 (Iteration 1)
@@ -81,10 +85,11 @@ bwf_player/
   tournaments.py  R4: history_window, get_tournaments (tournaments and results in a date window) (Iteration 5)
   matches.py      R5/R6: get_matches (partner, opponents, per-game scores of one event), check_totals (Iteration 6)
   parsing.py      to_int, to_date, clean_text: defensive coercion shared by the parsers
+  history.py      download_player_history (search -> tournaments -> matches -> store -> export) and format_history (Iteration 8)
   store.py        R7: HistoryStore (SQLite tables, player_match_view, CSV export) (Iteration 7)
 notebook.ipynb    thin interface over the package; committed with its executed outputs
 tests/            pytest; offline unit tests on saved fixtures; @pytest.mark.live smoke tests
-scripts/          save_test_results.py (both suites -> test_results/latest.txt), execute_notebook.py (runs notebook.ipynb, saves outputs)
+scripts/          download_history.py (command line), save_test_results.py (both suites -> test_results/latest.txt), execute_notebook.py (runs notebook.ipynb, saves outputs)
 test_results/     latest.txt: full output of the most recent test run (overwritten each iteration)
 ```
 
@@ -136,11 +141,17 @@ test_results/     latest.txt: full output of the most recent test run (overwritt
   - *Atomic*: each `save_*` call is one transaction; a failure part-way leaves the database as it was (tested with an injected failure).
   - *Order of saving*: tournaments first; `save_matches` for a tournament that is not stored raises `InvalidInputError` and stores nothing. A participant the site gives no id cannot be stored and is skipped with a log warning.
   - *Safety*: every value goes in through bound parameters (a tournament called `O'Brien Open"; DROP TABLE players; --` is stored literally); foreign keys are on; a file that is not a database, a path that cannot be created and a newer schema version each raise `BwfClientError`.
-  - *Config*: `BwfConfig.history_db_path` (`data/bwf_history.sqlite`) and `history_export_dir` (`data/export`) hold the defaults; `data/` is git-ignored. They are read by the end-to-end function in Iteration 8.
+  - *Config*: `BwfConfig.history_db_path` (`data/bwf_history.sqlite`) and `history_export_dir` (`data/export`) hold the defaults; `data/` is git-ignored. `download_player_history` reads them when no path is given.
+- **End-to-end history (Iteration 8).** `history.download_player_history(player, client=None, *, since, until, today, db_path, export_dir, export, progress)` returns a `HistorySummary`.
+  - *Input*: a name (searched with the R1 search; a string of digits or an `int` is a player id and skips the search). A name that is ambiguous or unknown returns the search result with a note, makes no history request and creates no database. A malformed id raises `InvalidInputError` before any request.
+  - *Flow*: `get_tournaments` -> `HistoryStore.save_tournaments` -> for each entry `get_matches` -> `save_matches` (so each event is saved as soon as it is downloaded) -> `export_csv`. No tournament in the window: nothing is saved and no database is created.
+  - *Failure*: the first failed request propagates (`BlockedByCloudflareError` must stop the run; a network failure would otherwise cost minutes of retries per event). What was saved before the failure stays, and calling again continues from the HTTP cache and the upserts. Tested: a block on the fifth match request, then a complete re-run, gives a database identical to an uninterrupted run.
+  - *Verification in the result*: `all_totals_agree` and `events_disagreeing` report whether the parsed matches reproduce the site's totals for each event; each disagreement is also written in `notes`. What was found is still saved when there is a disagreement.
+  - *Output*: `format_history(summary, matches=True)` gives the text report; `scripts/download_history.py` prints it and returns 0 (downloaded), 2 (no single player found, or nothing in the window) or 1 (invalid input or the download failed).
 - **Input safety.** Names are sanitized as above and passed to the API only via `requests` `params` (encoded), never string-concatenated into URLs. Server queries use only the normalized (alphanumeric) tokens. Player ids/slugs are URL-quoted when building profile URLs.
 - **No secrets** are used or stored. The session cookie is fetched at runtime and kept in memory.
 
-## 5. Data schema (v1.1)
+## 5. Data schema (v2.0)
 
 See `bwf_player/models.py`.
 
@@ -156,12 +167,13 @@ See `bwf_player/models.py`.
 - `GameScore` (R6): `game_no`, `player_points`, `opponent_points` (subject's side first)
 - `PlayerMatch` (R5, R6): `match_id`, `tournament_id`, `draw_id`, `draw_name`, `round`, `match_date`, `duration_min`, `side`, `player`, `partner`, `opponents`, `won`, `status`, `games`, `notes`
 - `EventMatches` (R5, R6): `tournament_id`, `event_code`, `event_id`, `matches`, `totals_agree`, `notes`
+- `HistorySummary` (Iteration 8): `search`, `player_id`, `player_name`, `since`, `until`, `tournaments`, `events`, `matches`, `matches_by_status`, `games`, `events_checked`, `events_disagreeing`, `all_totals_agree`, `database`, `csv_files`, `history`, `event_matches`, `notes`
 
 BWF raw field names for bio/ranking are unconfirmed; models are the package's own schema and parsers map onto them.
 
 ## 6. Testing strategy
 
-pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live smoke tests are marked `@pytest.mark.live` and excluded by default (`pytest -m live` to run). `python scripts/save_test_results.py` runs both suites and saves the full output to `test_results/latest.txt` (overwritten every iteration; `--no-live` skips the live suite). Required edge cases: exact, fuzzy, ambiguous, not found, empty input, special characters, missing fields, unranked player. Iteration 5 adds `tests/test_tournaments.py` and two live tests; Iteration 6 adds `tests/test_matches.py` (real fixtures for singles, doubles, mixed, team events, group stage, qualification, retirement, walkover and bye) and two live tests; Iteration 7 adds `tests/test_store.py` (database, view and CSV on real fixtures) and one live test. `tests/test_notebook.py` guards the committed notebook: valid, every code cell executed without errors, only uses the package, shows the main result, contains no secrets or local paths.
+pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live smoke tests are marked `@pytest.mark.live` and excluded by default (`pytest -m live` to run). `python scripts/save_test_results.py` runs both suites and saves the full output to `test_results/latest.txt` (overwritten every iteration; `--no-live` skips the live suite). Required edge cases: exact, fuzzy, ambiguous, not found, empty input, special characters, missing fields, unranked player. Iteration 5 adds `tests/test_tournaments.py` and two live tests; Iteration 6 adds `tests/test_matches.py` (real fixtures for singles, doubles, mixed, team events, group stage, qualification, retirement, walkover and bye) and two live tests; Iteration 7 adds `tests/test_store.py` (database, view and CSV on real fixtures) and one live test; Iteration 8 adds `tests/test_history.py` (the whole download on fixtures, including a Cloudflare block half way followed by a resume, and an event that does not add up), `tests/test_script.py` (the command line) and one live end-to-end test (the second run must make no request). `tests/test_notebook.py` guards the committed notebook: valid, every code cell executed without errors, only uses the package, shows the main result, contains no secrets or local paths.
 
 ## 7. Iteration plan
 
@@ -175,7 +187,7 @@ pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live sm
 | 5 | R4: tournaments in a one-year window and the result per event | Done |
 | 6 | R5 + R6: partners, opponents, per-game scores; reconciliation with the R4 totals | Done |
 | 7 | R7: SQLite storage (re-runnable) and CSV export | Done |
-| 8 | End-to-end `download_player_history`, notebook, README, full regression | Planned |
+| 8 | End-to-end `download_player_history`, command line, notebook, README, full regression | Done |
 
 ## 8. Open questions
 
@@ -187,7 +199,9 @@ pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live sm
 5. **Which ranking event (awaiting your decision).** Implemented as: the first event the site lists, with the others in `other_events` and selectable via `event_id`. Confirm this is what you want, or whether the result should contain all events (2 more requests per extra event).
 6. ~~Team events and group stages~~ **Resolved in Iteration 6.** Team events and group stages use the same match shape as ordinary events (Thomas Cup ties, a finals group stage, qualification plus main draw, all fixtures). New unusual cases found and handled: a draw whose matches are an object instead of a list, byes, and start times that must come from `match_start_time_details`. Not seen in the data: a disqualification (`score_status` 3) and a match still in progress (`match_state` other than `F`); both are handled defensively (status `unknown` or no usable winner, with a note) but untested against real data.
 7. **Para-badminton (open, limitation).** Every request sends `isPara=false`, so a para player's tournaments are not covered. Supporting them needs the para variants of the same endpoints; not planned.
-8. **Window rule (decided by the assistant, please confirm).** A tournament counts when its dates overlap the window, not only when it starts inside it. Effect on the default window (2025-09-21 to 2026-09-21): China Masters 2025 (16-21 Sep 2025) is included. Say so if you want start-date-in-window instead.
+8. **Window rule (decided by the assistant, still awaiting your confirmation).** A tournament counts when its dates overlap the window, not only when it starts inside it. Effect on the default window (2025-09-21 to 2026-09-21): China Masters 2025 (16-21 Sep 2025) is included. Say so if you want start-date-in-window instead.
+
+9. **Terms of service (still open, now more relevant).** The history download makes 25-40 requests per player rather than about 5. The site's terms and conditions have still not been read from an unblocked network (item 2). Please check them before using the tool beyond personal research.
 
 ## 9. Development procedure
 
@@ -238,4 +252,10 @@ Differences from the model planned on 2026-09-21: the `slot` column was dropped 
 
 ### Status
 
-R4 (Iteration 5), R5-R6 (Iteration 6) and R7 (Iteration 7) are implemented and tested (`bwf_player/tournaments.py`, `bwf_player/matches.py`, section 4). R7 (Iteration 7, `bwf_player/store.py`) is implemented too. The end-to-end `download_player_history`, the notebook and the final regression follow in Iteration 8 (section 7).
+All of R4-R7 are implemented and tested: `bwf_player/tournaments.py` (Iteration 5), `matches.py` (Iteration 6), `store.py` (Iteration 7) and, tying them together, `history.py` (Iteration 8). The notebook (section 4) and `scripts/download_history.py` are thin interfaces over `download_player_history`.
+
+**Live result (2026-09-21):** for Jonatan CHRISTIE the download gives 19 tournaments, 58 matches, 138 games, and every one of the 19 events reproduces the site's own match, game and point totals. A second run is answered entirely from the cache (tested live: no request made) and leaves the database unchanged.
+
+**Differences from the plan approved on 2026-09-21:** the notebook does not add `pandas` to its extra (the notebook reads the database with the standard library, and the README shows the one-line `pandas.read_sql` call; this keeps the install light); a command-line script (`scripts/download_history.py`) was added, which the plan called optional; the `slot` column, `players.slug` and the `runs` idea were dropped (Iteration 7 notes). Everything else follows the plan.
+
+**Not covered:** several players in one call (each player is tens of requests, so a batch would need its own pacing and block handling, and the terms of the site have not been reviewed), para players (section 8, item 7), and the practical limits listed in the README.

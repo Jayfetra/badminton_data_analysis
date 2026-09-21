@@ -1,15 +1,13 @@
-# BWF Player Lookup
+# BWF Player Lookup and Tournament History
 
-Type a badminton player's name and get their personal details and ranking from [bwfbadminton.com](https://bwfbadminton.com).
+Type a badminton player's name and get, from [bwfbadminton.com](https://bwfbadminton.com):
 
 | | What you get |
 |---|---|
 | **Search** | The player's profile URL. Ignores case, accents and word order; tolerates typos in full names; returns ranked candidates when the name is ambiguous; a clear "not found" otherwise. |
 | **Personal details** | Nationality, height (cm), playing hand (Right/Left). |
 | **Ranking** | Current rank and how many consecutive weeks the player has held it (plus since when). |
-| **Tournaments (new, in progress)** | Every tournament the player entered in the last year, with the result per event (`1st`, `QF`, ...), the record and the category. |
-| **Matches (new, in progress)** | For each event: every match with the partner, the opponents, the round, the date and the points of every game. |
-| **Storage (new, in progress)** | Saved to a SQLite database (re-runnable) and exported as CSV. The one-call download comes next. |
+| **Tournament history** | Every tournament the player entered in the last year, and for each: the **result** (`1st`, `QF`, `R16`, ...), **who they played with** (doubles partner), **who they played against**, and the **points of every game**. Saved to a SQLite database and CSV files; running it again never duplicates anything. |
 
 A value the site does not list is `null`, with a note explaining it. A missing field never fails the whole request.
 
@@ -21,9 +19,82 @@ python -m venv .venv
 pip install -e ".[dev,notebook]"   # "notebook" adds what is needed to run the notebook
 ```
 
-**Notebook:** open [notebook.ipynb](notebook.ipynb) (VS Code or Jupyter), set `PLAYER_NAME`, run all cells. The committed notebook already contains a run, so you can read the results without running anything.
+**Notebook:** open [notebook.ipynb](notebook.ipynb) (VS Code or Jupyter), set `PLAYER_NAME`, run all cells. Section 4 downloads the last year's history. The committed notebook already contains a run, so you can read the results without running anything.
 
-**Python:**
+**Command line:** the whole history download in one command.
+
+```bash
+python scripts/download_history.py "Jonatan Christie"
+python scripts/download_history.py 73442 --since 2026-01-01 --until 2026-06-30
+python scripts/download_history.py "Fajar Alfian" --db data/fajar.sqlite --out data/fajar_csv --no-matches
+```
+
+## Tournament history (one call)
+
+```python
+from bwf_player import download_player_history, format_history
+
+summary = download_player_history("jonathan cristie")    # a name, or the player id (73442)
+print(format_history(summary))
+```
+
+Real output (2026-09-21; the window is one year back from today):
+
+```
+Search:       FOUND - Matched 'Jonatan CHRISTIE' (score 94).
+Player:       Jonatan CHRISTIE (id 73442)
+Window:       2025-09-21 to 2026-09-21
+Downloaded:   19 tournament(s), 19 event(s), 58 match(es) (58 played), 138 game(s)
+Checked:      the matches reproduce the site's own totals: yes (19 event(s))
+Database:     data\bwf_history.sqlite
+CSV:          data\export\results.csv
+CSV:          data\export\matches.csv
+CSV:          data\export\games.csv
+
+2025-09-23  SUWON VICTOR Korea Open 2025  [MS]  result: 1st  5-0 in matches  (HSBC BWF World Tour Super 500)
+    R32       won              vs NG Ka Long Angus  21-11, 21-17
+    R16       won              vs Chia Hao LEE  22-20, 15-21, 21-15
+    QF        won              vs Kenta NISHIMOTO  21-14, 21-8
+    SF        won              vs Alwi FARHAN  18-21, 21-14, 21-15
+    Final     won              vs Anders ANTONSEN  21-10, 15-21, 21-17
+```
+
+In doubles each match also names the partner and both opponents:
+
+```
+    Final     lost             with Muhammad Shohibul FIKRI vs KIM Won Ho / SEO Seung Jae  16-21, 21-23
+```
+
+- The window is `since`/`until` (default: one year back from today to today). A tournament counts if its dates overlap the window.
+- **The "Checked" line is a built-in test.** The site shows its own totals for each tournament (matches, games and points won and lost). The downloaded matches are added up and compared with them; any difference is listed in `summary.notes` and `summary.events_disagreeing`.
+- **Cost.** About 25 requests for a singles player who entered 19 events (two for the years, up to four for tournament categories, one per event entered), a minute or two at the polite pace of 2.5 s per request; doubles players who enter several events per tournament need more. Everything is cached, so repeating the call is instant and free.
+- **Failures.** If a request fails (for example Cloudflare blocks it) the exception is raised and whatever was saved up to then stays in the database. Run the same call again later: it continues from the cache and updates the same rows.
+- A name that matches no single player, or a player with no tournament in the window, downloads nothing and creates no database; `summary.notes` says why.
+- `summary` is a pydantic model (`summary.matches`, `summary.all_totals_agree`, `summary.history`, `summary.event_matches`, `summary.model_dump_json()`).
+
+### The saved data
+
+`data/bwf_history.sqlite` (git-ignored) has the tables `players`, `tournaments`, `results`, `matches`, `match_players` and `games`, and the view `player_match_view` with one row per player and match:
+
+```python
+import sqlite3
+con = sqlite3.connect("data/bwf_history.sqlite")
+con.execute("""SELECT match_date, tournament, round, won, partner, opponent_1, opponent_2, games
+               FROM player_match_view WHERE player_id = 73442 ORDER BY match_date, seq""").fetchall()
+# or: pandas.read_sql("SELECT * FROM player_match_view", con)
+```
+
+`data/export/` holds the same as CSV (UTF-8 with a byte-order mark so Excel shows accents; empty values are blank):
+
+| File | One row per | Main columns |
+|---|---|---|
+| `results.csv` | event entered | player, tournament, category, dates, location, event (`MS`, `WD`, ...), `position`, matches/games/points won and lost |
+| `matches.csv` | match | player, tournament, event, round, date, `status`, `won` (1/0/empty), partner, `opponent_1`, `opponent_2`, `games` ("21-17, 21-19", the player's points first) |
+| `games.csv` | game | player, tournament, round, match, `game_no`, `player_points`, `opponent_points` |
+
+`status` is `played`, `bye` (the player advanced without playing; the site counts it as a match won, `won` is empty), `walkover`, `retired` (the partial game is kept) or `disqualified`. Filter `status = 'played'` for matches that were really played. Column and table details: PRD section 10.
+
+## Player lookup (name to details and ranking)
 
 ```python
 from bwf_player import format_result, lookup_player
@@ -47,88 +118,77 @@ Ranking (MEN'S SINGLES)
   At this rank:  4 week(s), since 2026-08-25 (latest ranking list 2026-09-15)
 ```
 
-`result` is a pydantic model (`result.search`, `result.profile`, `result.ranking`; `result.model_dump_json()` for JSON). The three steps are also available on their own:
+`result` is a pydantic model (`result.search`, `result.profile`, `result.ranking`; `result.model_dump_json()` for JSON).
+
+## Step by step
+
+Every stage is also available on its own:
 
 ```python
+from datetime import date
+from bwf_player import get_matches, get_tournaments, HistoryStore
 from bwf_player.search import search_player
 from bwf_player.profile import get_profile
 from bwf_player.ranking import get_ranking
 
-found = search_player("Christie Jonatan")       # status: found | ambiguous | not_found
+found = search_player("Christie Jonatan")        # status: found | ambiguous | not_found
 pid = found.best_match.player_id
-get_profile(pid)                                 # nationality, height_cm, playing_hand, missing_fields, notes
-get_ranking(pid)                                 # current_rank, weeks_at_current_rank, other_events, notes
-get_ranking(pid, event_id="9-90070")             # a different ranking event (ids are listed in other_events)
-```
+get_profile(pid)                                  # nationality, height_cm, playing_hand, missing_fields, notes
+get_ranking(pid)                                  # current_rank, weeks_at_current_rank, other_events, notes
+get_ranking(pid, event_id="9-90070")              # a different ranking event (ids are listed in other_events)
 
-**Tournaments, matches and storage for the last year** (Iterations 5-7; a one-call download follows):
+history = get_tournaments(pid)                    # oldest first, one entry per event entered
+history.entries[-1]                               # position, matches_won, games_lost, points_for, category, ...
+get_tournaments(pid, since=date(2026, 1, 1), until=date(2026, 3, 31))
 
-```python
-from bwf_player import get_tournaments
-
-history = get_tournaments(pid)                    # 2025-09-21 .. 2026-09-21 when written
-for e in history.entries:                         # oldest first, one row per event entered
-    print(e.start_date, e.name, e.event_code, e.position, e.category)
-# 2026-09-01 LI-NING China Masters 2026 MS R16 HSBC BWF World Tour Super 750
-
-from bwf_player import get_matches
 event = get_matches(pid, history.entries[-1])     # one request: every match of that event
 for m in event.matches:
-    scores = ", ".join(f"{g.player_points}-{g.opponent_points}" for g in m.games)
-    print(m.round, "won" if m.won else "lost", m.partner and m.partner.name, [o.name for o in m.opponents], scores)
-# R32 won None ['LEONG Jun Hao'] 21-17, 21-19
-# R16 lost None ['Jason GUNAWAN'] 16-21, 16-21
+    print(m.round, m.won, m.partner and m.partner.name, [o.name for o in m.opponents],
+          [(g.player_points, g.opponent_points) for g in m.games])
 event.totals_agree                                # True: the matches add up to the site's own totals
 
-from bwf_player.store import HistoryStore
-with HistoryStore("data/bwf_history.sqlite") as store:         # re-running never duplicates anything
+with HistoryStore("data/bwf_history.sqlite") as store:
     store.save_tournaments(history, player_name="Jonatan CHRISTIE")
-    for entry in history.entries:
-        store.save_matches(get_matches(pid, entry))
-    store.export_csv("data/export")                          # results.csv, matches.csv, games.csv
-    rows = store.connection.execute(
-        "SELECT round, partner, opponent_1, opponent_2, games, won FROM player_match_view "
-        "WHERE tournament_id = 5625 ORDER BY seq").fetchall()   # or pandas.read_sql(..., store.connection)
+    store.save_matches(event)
+    store.export_csv("data/export")
 ```
 
-The database has `players`, `tournaments`, `results`, `matches`, `match_players` and `games` tables plus the view `player_match_view` (one row per player and match). Table details: PRD section 10.
-
-`position` is the site's own label (`null` for team events, which have none). A tournament counts if its dates overlap the window. `get_tournaments(pid, since=date(...), until=date(...))` sets another window. The default window costs two requests plus one to four for the categories.
-
-Settings (match threshold, request spacing, cache location and lifetime) live in `BwfConfig`; pass `BwfHttpClient(BwfConfig(...))` as the `client` argument.
+Settings (match threshold, request spacing, cache location and lifetime, default database and CSV folder) live in `BwfConfig`; pass `BwfHttpClient(BwfConfig(...))` as the `client` argument.
 
 ## How it works
 
-The site is a JavaScript app that loads its data from a JSON API, so the tool calls that API directly instead of scraping HTML. Search fuzzy-matches against the site's full player list (cached for 7 days) and falls back to the site's own name search for players missing from that list. "Weeks at this rank" is derived from the weekly ranking history: the site's own "consecutive weeks" figure describes the player's *best* rank, not the current one. Design, endpoints and decisions are in [docs/PRD_master.md](docs/PRD_master.md).
+The site is a JavaScript app that loads its data from a JSON API, so the tool calls that API directly instead of scraping HTML. Search fuzzy-matches against the site's full player list (cached for 7 days) and falls back to the site's own name search for players missing from that list. "Weeks at this rank" is derived from the weekly ranking history: the site's own "consecutive weeks" figure describes the player's *best* rank, not the current one. The history comes from the same endpoints the site's player page uses for its Tournaments tab: the tournament list per year, then the match breakdown per event. Design, endpoints, findings and decisions are in [docs/PRD_master.md](docs/PRD_master.md).
 
 ## Project layout
 
 ```
-bwf_player/      the package: http_client, names, search, profile, ranking, lookup, tournaments, matches, store, parsing, models, config
+bwf_player/      the package: http_client, names, search, profile, ranking, lookup,
+                 tournaments, matches, store, history, parsing, models, config
 notebook.ipynb   thin interface over the package (committed with its outputs)
 tests/           pytest; offline tests use saved real API responses in tests/fixtures/
-scripts/         save_test_results.py, execute_notebook.py
+scripts/         download_history.py, save_test_results.py, execute_notebook.py
 docs/            PRD_master.md (source of truth), PRD_changelog.md (per iteration)
 test_results/    latest.txt: full output of the most recent test run
+data/            the downloaded database and CSV files (created on first use, git-ignored)
 ```
 
 ## Tests
 
 ```bash
-pytest                                # offline suite (default; no network)
-pytest -m live                        # live smoke tests against bwfbadminton.com
+pytest                                # offline suite (default; no network): 553 tests
+pytest -m live                        # live smoke tests against bwfbadminton.com: 15 tests, about 2 minutes
 python scripts/save_test_results.py   # both suites -> test_results/latest.txt
 python scripts/execute_notebook.py    # re-run the notebook and save its outputs
 ```
 
 ## Limitations and cautions
 
-- **Cloudflare.** The site blocks automated traffic it dislikes; during development a test IP was hard-blocked after about 15 quick requests. The client waits 2.5 s between requests, caches everything, and stops at once (raising `BlockedByCloudflareError`) if it is blocked. Do not loop it over many players.
+- **Cloudflare.** The site blocks automated traffic it dislikes; during development a test IP was hard-blocked after about 15 quick requests. The client waits 2.5 s between requests, caches everything, and stops at once (raising `BlockedByCloudflareError`) if it is blocked. Do not loop it over many players: a download is tens of requests per player.
 - **Unofficial API.** It is the site's own front-end API, undocumented, and may change without notice. **The site's terms and conditions have not been reviewed**; check them before any use beyond personal research.
-- **Search limits.** A typo inside a one-word query ("cristie") is not matched. A typo'd name for a player missing from the site's player list (e.g. Kento Momota) is not found. A reversed name for such a player, when its words are common, may fail ("Dan Lin" does not find "LIN Dan"). Details and workarounds: PRD section 8.
+- **Search limits.** A typo inside a one-word query ("cristie") is not matched. A typo'd name for a player missing from the site's player list (e.g. Kento Momota) is not found. A reversed name for such a player, when its words are common, may fail ("Dan Lin" does not find "LIN Dan"). Details and workarounds: PRD section 8. To avoid the search, pass the player id.
 - **Ranking events.** The result reports the first event the site lists (usually singles); others are in `other_events`.
-- **Tournament history.** Para tournaments are not covered; the category is `null` for tournaments the site's calendar gives none (62 of the 326 in the last year's calendar; none for Christie's). A bye is returned as its own status (`bye`, no result); filter `status == "played"` for matches that were really played. Disqualifications and matches still in progress are handled defensively but were not present in the real data used for testing.
-- **Stored data.** `data/` (database and CSV) is git-ignored. The database keeps everything you have saved; saving again updates rows but never deletes any, so a match the site later removes stays in the file. The view `player_match_view` lists only players whose own history you downloaded.
+- **Tournament history.** One player at a time. Para tournaments are not covered. The category is `null` for tournaments the site's calendar gives none (62 of the 326 in the last year's calendar; none for Christie's). Disqualifications and matches still in progress are handled defensively but were not present in the real data used for testing. `position` is the site's own label and is `null` for team events, which have none.
+- **Stored data.** The database keeps everything you have saved; saving again updates rows but never deletes any, so a match the site later removes stays in the file. The view `player_match_view` lists only players whose own history you downloaded (opponents are in `players` and `match_players`).
 - **Unknown id vs never ranked.** The site answers both the same way, so both come back as "no ranking events".
 
 ## Documentation

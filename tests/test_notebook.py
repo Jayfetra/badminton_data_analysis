@@ -33,6 +33,7 @@ def test_every_code_cell_was_executed_without_errors(notebook: dict) -> None:
 def test_is_a_thin_interface_over_the_package(notebook: dict) -> None:
     source = "\n".join("".join(cell["source"]) for cell in code_cells(notebook))
     assert "from bwf_player import" in source and "lookup_player(" in source and "format_result(" in source
+    assert "download_player_history(" in source and "format_history(" in source
     for forbidden in ("import requests", "rapidfuzz", "BeautifulSoup", "extranet-lv"):
         assert forbidden not in source
 
@@ -49,3 +50,15 @@ def test_has_no_secrets_or_local_paths(notebook: dict) -> None:
     text = NOTEBOOK.read_text(encoding="utf-8")
     for marker in ("C:\\Users", "jayfet", "laravel_session", "@gmail.com"):
         assert marker not in text
+
+
+def test_shows_the_history_download_and_the_saved_data(notebook: dict) -> None:
+    output = "".join(
+        "".join(o.get("text", "")) for cell in code_cells(notebook) for o in cell["outputs"]
+    )
+    for expected in (
+        "Downloaded:", "tournament(s)", "the matches reproduce the site's own totals: yes",
+        "result:", " vs ", "First matches in the database", "CSV files:",
+    ):
+        assert expected in output
+    assert "NO - see notes" not in output

@@ -177,3 +177,32 @@ def test_live_store_and_export_reproduce_the_sites_totals(client: BwfHttpClient,
         files = store.export_csv(tmp_path / "csv")
     with files["matches.csv"].open(encoding="utf-8-sig", newline="") as handle:
         assert len(list(csv.DictReader(handle))) == expected
+
+
+def test_live_end_to_end_history_download_and_a_free_second_run(client: BwfHttpClient, tmp_path: Path) -> None:
+    import sqlite3
+
+    from bwf_player import download_player_history, format_history
+
+    db = tmp_path / "e2e.sqlite"
+    summary = download_player_history("jonathan cristie", client, db_path=db, export_dir=tmp_path / "csv")
+    assert summary.search.status == "found" and summary.player_id == "73442"
+    assert summary.tournaments >= 10 and summary.matches >= 30 and summary.games >= 60
+    assert summary.all_totals_agree is True, summary.events_disagreeing  # matches reproduce the site's totals
+    assert summary.matches_by_status.get("played", 0) >= 30
+    assert "Jonatan CHRISTIE" in format_history(summary)
+
+    def dump() -> list[tuple]:
+        with sqlite3.connect(db) as connection:
+            return [row for table in ("tournaments", "results", "matches", "match_players", "games")
+                    for row in connection.execute(f"SELECT * FROM {table} ORDER BY 1, 2, 3")]
+
+    before = dump()
+    real_get, made = client._session.get, []
+    client._session.get = lambda url, *a, **k: (made.append(url), real_get(url, *a, **k))[1]
+    try:
+        again = download_player_history(73442, client, db_path=db, export_dir=tmp_path / "csv")
+    finally:
+        client._session.get = real_get
+    assert made == [], "the second run should be answered entirely from the cache"
+    assert again.matches == summary.matches and dump() == before

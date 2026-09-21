@@ -178,6 +178,36 @@ class EventMatches(BaseModel):
     notes: list[str] = Field(default_factory=list)
 
 
+class HistorySummary(BaseModel):
+    """What one `download_player_history` call found and saved.
+
+    `search` is None when a player id was given instead of a name. If the name matched no single
+    player, or the player entered no tournament in the window, nothing is saved (`database` is
+    None) and `notes` says why. `all_totals_agree` is True when every event's parsed matches
+    reproduce the site's own totals, False if any event differs (listed in `events_disagreeing`),
+    None when no event had totals to compare. `history` and `event_matches` hold the data itself.
+    """
+
+    search: SearchResult | None = None
+    player_id: str | None = None
+    player_name: str | None = None
+    since: date | None = None
+    until: date | None = None
+    tournaments: int = 0
+    events: int = 0
+    matches: int = 0
+    matches_by_status: dict[str, int] = Field(default_factory=dict)
+    games: int = 0
+    events_checked: int = 0
+    events_disagreeing: list[str] = Field(default_factory=list)
+    all_totals_agree: bool | None = None
+    database: str | None = None
+    csv_files: dict[str, str] = Field(default_factory=dict)
+    history: TournamentHistory | None = None
+    event_matches: list[EventMatches] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+
+
 class PlayerResult(BaseModel):
     """End-to-end result the notebook displays."""
 
