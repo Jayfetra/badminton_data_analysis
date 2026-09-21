@@ -52,7 +52,7 @@ Method: `curl` with a browser User-Agent, inspecting page source and the inline 
    - Decision (user, 2026-09-21): plain `requests` client, no headless-browser fallback. The risk is documented, not engineered around. Reconsider if blocks prove persistent.
 2. **ToS unverified (medium).** See section 2.
 3. **Unofficial API (medium).** Field names and endpoints may change. Parsers are isolated in their own modules and tested against saved fixtures so drift is easy to spot.
-4. **Live testing.** The block observed in Iteration 0 lifted within a day. Iteration 1 live smoke tests (about 5 requests, 2.5 s apart, custom `Mozilla/5.0 (compatible; bwf-player-lookup/...)` User-Agent) passed with no block. Run them sparingly.
+4. **Live testing.** The block observed in Iteration 0 lifted within a day. Since then the live smoke suite (8 tests, roughly 15 requests over about 40 s, 2.5 s apart, custom `Mozilla/5.0 (compatible; bwf-player-lookup/...)` User-Agent) and repeated notebook runs have caused no block. Run the live suite sparingly.
 
 ## 4. Architecture
 
@@ -136,6 +136,6 @@ pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live sm
 1. ~~Search coverage~~ **Resolved in Iteration 1.** `vue-popular-players` searches the whole database but is a strict substring match; `vue-h2h-players` is a complete-looking but incomplete index. Hybrid design in section 4.
 1a. **Known limitations of R1.** (a) A typo inside a *single-word* partial name ("cristie", "jonathan") is not matched; typo tolerance applies to full names. (b) A typo'd query for a player absent from the index (Momota, Tai Tzu Ying, Carolina Marin) will not be found, because the server search is strict. (c) If a typo'd query closely resembles a different indexed player, that player can be returned as `found`. (d) A reversed query for a player who is missing from the index and whose name parts are common fails: "Dan Lin" does not find "LIN Dan" (found while testing R3), because the server is queried with the phrase as typed and then with single common words that return more players than are paged. Rotating the words ("lin dan") would fix it; not done, to keep R1 unchanged in this iteration. Mitigation if any of these matter: page the full player list once (about 100+ requests at 30 per page; not done, given the block risk).
 2. **ToS.** Read `/terms-and-conditions/` from an unblocked network and record the scraping stance here.
-3. ~~Bio field names~~ **Resolved in Iteration 2** (see `vue-player-summary`). **Ranking field names** remain (Iteration 3): capture real responses as fixtures first.
+3. ~~Bio field names~~ **Resolved in Iteration 2** (see `vue-player-summary`). **Ranking field names** also **resolved in Iteration 3** (see the ranking endpoints; real responses are saved as fixtures).
 4. ~~Height format~~ **Resolved:** centimetres, returned as `height_cm` (float).
 5. **Which ranking event (decision needed).** Implemented as: the first event the site lists, with the others in `other_events` and selectable via `event_id`. Confirm this is what you want, or whether the result should contain all events (2 more requests per extra event).
