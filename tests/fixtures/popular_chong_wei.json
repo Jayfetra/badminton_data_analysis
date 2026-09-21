@@ -1,0 +1,66 @@
+{
+ "results": [
+  {
+   "id": "52030",
+   "slug": "chong-wei-feng",
+   "name_display": "CHONG Wei Feng",
+   "name_display_bold": null,
+   "name_display_break": "<span class=\"name-2\">CHONG</span><br><span class=\"name-1\">Wei Feng</span>",
+   "name_type_id": 1,
+   "avatar": {
+    "url_thumbnail": "https://extranet.bwfbadminton.com/docs/players/52030/profile/chong-wei-feng-922.jpg",
+    "url_medium_image": "https://extranet.bwfbadminton.com/docs/players/52030/profile/chong-wei-feng-922.jpg",
+    "url_large_image": "https://extranet.bwfbadminton.com/docs/players/52030/profile/chong-wei-feng-922.jpg",
+    "url_original": "https://extranet.bwfbadminton.com/docs/players/52030/profile/chong-wei-feng-922.jpg",
+    "name": "chong-wei-feng-922.jpg",
+    "file_name": "chong-wei-feng-922.jpg",
+    "url_cloudinary": "https://img.bwfbadminton.com/image/upload/t_96_player_profile/v1604897110/assets/players/thumbnail/52030.png"
+   },
+   "country_model": {
+    "id": 7,
+    "name": "Malaysia",
+    "flag_name_svg": "malaysia.svg",
+    "code_iso3": "MYS"
+   },
+   "award_year": null
+  },
+  {
+   "id": "50152",
+   "slug": "lee-chong-wei",
+   "name_display": "LEE Chong Wei",
+   "name_display_bold": null,
+   "name_display_break": "<span class=\"name-2\">LEE</span><br><span class=\"name-1\">Chong Wei</span>",
+   "name_type_id": 1,
+   "avatar": {
+    "url_thumbnail": "https://extranet.bwfbadminton.com/docs/players/50152/profile/50152.jpg",
+    "url_medium_image": "https://extranet.bwfbadminton.com/docs/players/50152/profile/50152.jpg",
+    "url_large_image": "https://extranet.bwfbadminton.com/docs/players/50152/profile/50152.jpg",
+    "url_original": "https://extranet.bwfbadminton.com/docs/players/50152/profile/50152.jpg",
+    "name": "50152.jpg",
+    "file_name": "50152.jpg",
+    "url_cloudinary": "https://img.bwfbadminton.com/image/upload/t_96_player_profile/v1604895100/assets/players/thumbnail/50152.png"
+   },
+   "country_model": {
+    "id": 7,
+    "name": "Malaysia",
+    "flag_name_svg": "malaysia.svg",
+    "code_iso3": "MYS"
+   },
+   "award_year": null
+  }
+ ],
+ "pagination": {
+  "current_page": 1,
+  "first_page_url": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players?page=1",
+  "from": 1,
+  "last_page": 1,
+  "last_page_url": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players?page=1",
+  "next_page_url": null,
+  "path": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players",
+  "per_page": 30,
+  "prev_page_url": null,
+  "to": 2,
+  "total": 2
+ },
+ "drawCount": null
+}

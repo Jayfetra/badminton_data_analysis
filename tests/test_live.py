@@ -86,3 +86,15 @@ def test_live_ranking_of_a_retired_and_an_unknown_player(client: BwfHttpClient) 
     assert retired.notes and retired.event is not None
     unknown = get_ranking("999999999", client)
     assert unknown.is_ranked is False and unknown.event is None and unknown.notes
+
+
+def test_live_end_to_end_lookup_and_report(client: BwfHttpClient) -> None:
+    from bwf_player import format_result, lookup_player
+
+    result = lookup_player("jonathan cristie", client)
+    assert result.search.status == "found" and result.profile.nationality == "Indonesia"
+    assert result.ranking.is_ranked and result.ranking.weeks_at_current_rank >= 1
+    text = format_result(result)
+    assert "Personal details" in text and "Ranking (MEN'S SINGLES)" in text
+
+    assert lookup_player("christie", client).profile is None  # ambiguous: nothing further fetched

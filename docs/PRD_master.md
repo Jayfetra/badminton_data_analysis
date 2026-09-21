@@ -1,6 +1,6 @@
 # PRD Master — BWF Player Lookup
 
-**Version:** 0.4 (Iteration 3: R3 ranking) · **Last updated:** 2026-09-21
+**Version:** 1.0 (Iteration 4: final notebook, README, full regression) · **Last updated:** 2026-09-21
 
 Single source of truth for requirements, architecture decisions, data schema and open questions.
 
@@ -68,9 +68,10 @@ bwf_player/
   search.py       R1 (Iteration 1)
   profile.py      R2 (Iteration 2)
   ranking.py      R3 (Iteration 3)
-notebook.ipynb    end-to-end demo
+  lookup.py       lookup_player (search -> profile -> ranking) and format_result (Iteration 4)
+notebook.ipynb    thin interface over the package; committed with its executed outputs
 tests/            pytest; offline unit tests on saved fixtures; @pytest.mark.live smoke tests
-scripts/          save_test_results.py: runs both suites, writes test_results/latest.txt
+scripts/          save_test_results.py (both suites -> test_results/latest.txt), execute_notebook.py (runs notebook.ipynb, saves outputs)
 test_results/     latest.txt: full output of the most recent test run (overwritten each iteration)
 ```
 
@@ -101,10 +102,11 @@ test_results/     latest.txt: full output of the most recent test run (overwritt
   - *Unranked* (no events, or no current rank) is a normal result: `is_ranked=False`, `current_rank=None`, and a note. When there is no current rank the history is not requested.
   - *Weeks at rank*: trailing run of the current rank in the weekly history (row count, like the site's own streak). It is `None` with a note if the history is unreadable/empty, or if its latest row shows a different rank than the current one (the history lags). A week without a usable rank ends the run. `at_rank_since` is the first week of the run and `as_of` the latest list, so callers can also compute calendar time. Gaps in the weekly series (ranking freezes, e.g. 2020) are not counted as weeks.
   - *Input*: same `validate_player_id` as R2 (moved to `names.py` so both share it).
+- **End-to-end (Iteration 4).** `lookup_player(name, client=None, *, event_id=None)` returns a `PlayerResult` (search, profile, ranking, fetched_at). Profile and ranking are fetched only when the search finds exactly one player; an ambiguous or unknown name makes no further requests. `format_result` renders the text report used by the notebook (missing values as `null`, notes listed at the end). Network failures propagate as `BwfClientError` / `BlockedByCloudflareError`; the notebook catches them and prints a clear message.
 - **Input safety.** Names are sanitized as above and passed to the API only via `requests` `params` (encoded), never string-concatenated into URLs. Server queries use only the normalized (alphanumeric) tokens. Player ids/slugs are URL-quoted when building profile URLs.
 - **No secrets** are used or stored. The session cookie is fetched at runtime and kept in memory.
 
-## 5. Data schema (v0.1)
+## 5. Data schema (v1.0)
 
 See `bwf_player/models.py`.
 
@@ -119,7 +121,7 @@ BWF raw field names for bio/ranking are unconfirmed; models are the package's ow
 
 ## 6. Testing strategy
 
-pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live smoke tests are marked `@pytest.mark.live` and excluded by default (`pytest -m live` to run). `python scripts/save_test_results.py` runs both suites and saves the full output to `test_results/latest.txt` (overwritten every iteration; `--no-live` skips the live suite). Required edge cases: exact, fuzzy, ambiguous, not found, empty input, special characters, missing fields, unranked player.
+pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live smoke tests are marked `@pytest.mark.live` and excluded by default (`pytest -m live` to run). `python scripts/save_test_results.py` runs both suites and saves the full output to `test_results/latest.txt` (overwritten every iteration; `--no-live` skips the live suite). Required edge cases: exact, fuzzy, ambiguous, not found, empty input, special characters, missing fields, unranked player. `tests/test_notebook.py` guards the committed notebook: valid, every code cell executed without errors, only uses the package, shows the main result, contains no secrets or local paths.
 
 ## 7. Iteration plan
 
@@ -129,7 +131,7 @@ pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live sm
 | 1 | R1 search + tests | Done |
 | 2 | R2 profile + tests | Done |
 | 3 | R3 ranking + tests | Done |
-| 4 | Notebook, README, full regression | Pending |
+| 4 | Notebook, README, full regression | Done |
 
 ## 8. Open questions
 
@@ -138,4 +140,19 @@ pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live sm
 2. **ToS.** Read `/terms-and-conditions/` from an unblocked network and record the scraping stance here.
 3. ~~Bio field names~~ **Resolved in Iteration 2** (see `vue-player-summary`). **Ranking field names** also **resolved in Iteration 3** (see the ranking endpoints; real responses are saved as fixtures).
 4. ~~Height format~~ **Resolved:** centimetres, returned as `height_cm` (float).
-5. **Which ranking event (decision needed).** Implemented as: the first event the site lists, with the others in `other_events` and selectable via `event_id`. Confirm this is what you want, or whether the result should contain all events (2 more requests per extra event).
+5. **Which ranking event (awaiting your decision).** Implemented as: the first event the site lists, with the others in `other_events` and selectable via `event_id`. Confirm this is what you want, or whether the result should contain all events (2 more requests per extra event).
+
+## 9. Development procedure
+
+Every iteration follows these steps, in order. The order matters: documentation is written **after** testing, so that every number and claim in it comes from the final run.
+
+1. **Understand.** Read the requirement; inspect the real site or data first; ask the user when something is ambiguous instead of guessing.
+2. **Implement in small steps.** Keep earlier functionality unchanged unless the iteration requires it; if it does, record the change in `PRD_changelog.md`. Validate all input; never build URLs from raw input.
+3. **Test.** Add pytest tests with the code: offline unit tests on saved real responses (`tests/fixtures/`), edge cases, and a few `@pytest.mark.live` smoke tests. Fix failures at the cause. Run the notebook if it changed (`python scripts/execute_notebook.py`).
+4. **Save the results.** `python scripts/save_test_results.py` runs the offline and live suites and overwrites `test_results/latest.txt` (only the latest result is kept).
+5. **Update the documentation (mandatory, after all testing).** Using the final test results:
+   - `docs/PRD_master.md`: version, findings and endpoint table, schema, design notes, iteration table, open questions (mark resolved ones).
+   - `docs/PRD_changelog.md`: one entry (date, what changed, why, what was tested, findings); test counts must match `test_results/latest.txt`.
+   - `README.md`: usage, layout and limitations.
+   - Check for statements the change made stale (search for "Pending", "not yet", request or test counts, superseded assumptions) and correct them; state corrections openly.
+6. **Commit and push to `main`** with a clear message (e.g. `feat(search): fuzzy player lookup`), then report: summary, files changed, test results, commit hash and repo link, open questions and risks.

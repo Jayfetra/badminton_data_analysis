@@ -1,5 +1,30 @@
 # PRD Changelog
 
+## Iteration 4 — 2026-09-21 (final notebook, README, full regression)
+
+**What changed**
+- Added `bwf_player/lookup.py`: `lookup_player(name, client=None, *, event_id=None)` (search -> profile -> ranking in one call, returning the existing `PlayerResult` model) and `format_result` (text report). Both are exported from `bwf_player`. Profile and ranking are fetched only when the search finds exactly one player.
+- Notebook rebuilt as a thin interface (`lookup_player` + `format_result`, no logic of its own): input cell, readable result, JSON result, examples, notes. Committed **with its executed outputs** so it can be read without running. Added `scripts/execute_notebook.py` to refresh the outputs.
+- README rewritten as the final user documentation (quick start, example output, layout, tests, limitations).
+- PRD: version 1.0, new section 9 **Development procedure** (test, save results, then update documentation, commit, push; documentation is written after testing so its numbers come from the final run).
+- Earlier-iteration code touched: `bwf_player/__init__.py` (now also exports `lookup_player`, `format_result`, `RankingEvent`); `pyproject.toml` (the `notebook` extra is now `ipykernel`, `nbclient`, `nbformat` instead of the much heavier `jupyter` meta-package, which hung pip during development). No search, profile or ranking behaviour changed.
+- Fixtures: added a real `popular_chong_wei.json` (server-search response, captured from the local cache) and Aadhya SHINE's real entry in the trimmed player index, so the offline suite can run the full lookup for a retired and a sparse-profile player.
+
+**Why**
+- The notebook duplicated the orchestration (search, then profile, then ranking) across cells; a package-level function keeps it thin, as the specification requires, and makes the end-to-end path testable offline.
+- The user asked that documentation always be updated after testing; this is now a written step of the development procedure.
+
+**What was tested (full regression, `test_results/latest.txt`)**
+- Offline: **233 passed** (all iterations; 19 new: 14 for `lookup_player`/`format_result` incl. an exact text snapshot, ambiguous and not-found paths making no profile/ranking requests, event selection, JSON serialisation, Cloudflare block; 5 for the committed notebook).
+- Live: **9 passed** (1 new: end-to-end lookup and report; ambiguous name fetches nothing further).
+- Notebook executed end to end in a real kernel: 5 code cells, no errors.
+- A fresh clone of the repository was installed in a new virtual environment and its offline suite run (result in the iteration report).
+
+**Findings / still open**
+- Awaiting the user: which ranking event(s) to report (PRD section 8, item 5).
+- R1 limitation "Dan Lin" -> "LIN Dan" is documented, not fixed (README, PRD section 8, 1a-d).
+- Terms and conditions of bwfbadminton.com remain unreviewed.
+
 ## Iteration 3 — 2026-09-21 (R3: ranking)
 
 **What changed**

@@ -6,11 +6,13 @@ from bwf_player.exceptions import (
     BwfClientError,
     InvalidInputError,
 )
+from bwf_player.lookup import format_result, lookup_player
 from bwf_player.models import (
     PlayerCandidate,
     PlayerProfile,
     PlayerRanking,
     PlayerResult,
+    RankingEvent,
     SearchResult,
 )
 
@@ -25,5 +27,8 @@ __all__ = [
     "PlayerProfile",
     "PlayerRanking",
     "PlayerResult",
+    "RankingEvent",
     "SearchResult",
+    "format_result",
+    "lookup_player",
 ]

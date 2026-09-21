@@ -47,7 +47,7 @@ class FakeApiClient:
                 pid = f"9{word}{i}"
                 self._players[pid] = {"id": pid, "slug": f"{word.lower()}-decoy-{i}",
                                       "name_display": f"{word} Decoy{i}", "country_model": None}
-        for name in ("popular_christie.json", "popular_momota.json", "popular_tzu_ying.json"):
+        for name in ("popular_christie.json", "popular_momota.json", "popular_tzu_ying.json", "popular_chong_wei.json"):
             for item in load_fixture(name)["results"]:
                 self._players[item["id"]] = item
 
