@@ -75,6 +75,46 @@ class PlayerRanking(BaseModel):
     notes: list[str] = Field(default_factory=list)
 
 
+class TournamentEntry(BaseModel):
+    """One player's entry in one event of one tournament (R4): the tournament and the result.
+
+    A player who enters two events (e.g. women's singles and doubles) has two entries for the
+    tournament. `position` is the site's own label ("1st", "2nd", "3rd", "QF", "R16", "Qual. R32");
+    None means the site gives no individual position (team events show "N/A"). The counts are the
+    site's summary for this event, and are what the parsed matches are checked against.
+    `event_code` and `event_id` are None for a tournament the site lists with no event.
+    """
+
+    tournament_id: int
+    name: str
+    category: str | None = None
+    start_date: date
+    end_date: date
+    location: str | None = None
+    country: str | None = None
+    type_id: int | None = None
+    url: str | None = None
+    event_code: str | None = None
+    event_id: int | None = None
+    position: str | None = None
+    matches_won: int | None = None
+    matches_lost: int | None = None
+    games_won: int | None = None
+    games_lost: int | None = None
+    points_for: int | None = None
+    points_against: int | None = None
+
+
+class TournamentHistory(BaseModel):
+    """Tournaments a player entered between `since` and `until` (inclusive; overlap counts)."""
+
+    player_id: str
+    since: date
+    until: date
+    entries: list[TournamentEntry] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+
+
 class PlayerResult(BaseModel):
     """End-to-end result the notebook displays."""
 

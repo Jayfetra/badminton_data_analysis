@@ -27,6 +27,15 @@ _SUMMARY_FIXTURES = {
 }
 
 
+# (playerId, tmtYear) -> fixture; any other player/year has no tournaments.
+_TOURNAMENT_FIXTURES = {
+    ("73442", "2026"): "tournaments_christie_2026.json",
+    ("73442", "2025"): "tournaments_christie_2025.json",
+    ("89438", "2026"): "tournaments_aadhya_2026.json",
+    ("89438", "2025"): "tournaments_aadhya_2025.json",
+}
+
+
 def load_fixture(name: str) -> Any:
     return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
 
@@ -75,6 +84,12 @@ class FakeApiClient:
                 raise AssertionError(f"unexpected ranking request {endpoint} {key}")
             kind = "current" if endpoint.endswith("current") else "history"
             return load_fixture(f"ranking_{kind}_{_RANKING_DATA[key]}.json")
+        if endpoint == "vue-player-tournaments":
+            key = (str(params.get("playerId")), str(params.get("tmtYear")))
+            fixture = _TOURNAMENT_FIXTURES.get(key)
+            return load_fixture(fixture) if fixture else {"results": [], "drawCount": 1}
+        if endpoint == "vue-tournaments-search":
+            return load_fixture(f"calendar_page{int(params.get('page', 1))}.json")
         raise AssertionError(f"unexpected endpoint {endpoint}")
 
     def calls_to(self, endpoint: str) -> list[dict[str, Any]]:

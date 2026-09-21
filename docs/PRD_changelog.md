@@ -1,5 +1,33 @@
 # PRD Changelog
 
+## Iteration 5 — 2026-09-21 (R4: tournaments and results)
+
+**What changed**
+- New feature area, PRD section 10 (R4-R7): download the last year's tournaments for one player, with results, partners, opponents and per-game scores, into SQLite plus CSV. This iteration delivers R4 only.
+- Added `bwf_player/tournaments.py`: `history_window`, `get_tournaments(player_id, client=None, *, since, until, today, with_categories)` and pure parsers (`parse_tournaments`, `parse_calendar`). Two requests for the default window (one per calendar year), then 1-4 calendar pages for the tournament category.
+- `models.py`: added `TournamentEntry` (one row per player, tournament and event) and `TournamentHistory`. `__init__.py` exports them with `get_tournaments` and `history_window`.
+- Earlier-iteration code touched: only additions to `models.py`, `__init__.py`, `tests/fakes.py` (two new fake endpoints) and `tests/test_live.py`. No behaviour of R1-R3 changed.
+- Fixtures added: `tournaments_*.json` (Christie and Aadhya SHINE, 2025 and 2026) and `calendar_page1..4.json` (the real 326-tournament calendar), trimmed from real responses (see `tests/fixtures/README.md`).
+- PRD_master: version 1.1, endpoint table (5 new rows), R4 design notes, schema, iteration plan 5-8, open questions 6-8, section 10.
+
+**Why**
+- The user asked for a one-year tournament history per player. Inspecting the site's player page showed it already loads exactly this data through `vue-player-tournaments` and `vue-player-tmt-matches`, so a player-centric download needs about 25-40 requests per player instead of the 35,000+ a loop over the 3,429-player index would need.
+- The user clarified the scope: one input player plus that player's opponents, not every player.
+- The tournament list has no category, so the calendar endpoint is read (paged only as far as needed) to label each tournament.
+
+**What was tested (`test_results/latest.txt`)**
+- Offline: **334 passed** (233 before; 101 new in `tests/test_tournaments.py`): default window 2025-09-21..2026-09-21, 29 February, overlap rule at both edges, real Christie data (19 entries, chronological, one full entry compared field by field, positions `1st/2nd/3rd/QF/R3`, team event without position, categories), request economy (two year requests, calendar stops when everything is found, bounded paging), player with two events at one tournament, no tournaments, 10 malformed ids and no request made, since after until, calendar failure keeps the tournaments, Cloudflare block propagates, de-duplication across years, malformed rows skipped and counted, defensive coercion of counts (negative, boolean, NaN, non-numeric), placeholder positions, calendar parser.
+- Live: **11 passed** (2 new): Christie's real window (at least 5 tournaments, all overlapping the window, sorted, event records present, at least one category and one position) and an unknown id.
+
+**Findings**
+- The result label is `position` in the site's own words: `1st`, `2nd`, `3rd`, `QF`, `R16`, `R32`, `Qual. R32`, `R3` (finals group stage), and `N/A` for team events (stored as `null`).
+- 62 of the 326 calendar tournaments in the window have no category at all, so `category` can legitimately be `null`.
+- Corrected a stale statement: PRD risk 4 said the live suite had 8 tests and ran in about 40 s; it was already 9 tests after Iteration 4 and is 11 tests, about 60 s, now.
+- Not yet verified (Iteration 6): match shape for team events and group stages (open question 6). Para players are not covered (open question 7).
+
+**Open for the user**
+- Confirm the window rule (tournaments that overlap the window count, not only those that start in it; PRD section 8, item 8).
+
 ## Iteration 4 — 2026-09-21 (final notebook, README, full regression)
 
 **What changed**

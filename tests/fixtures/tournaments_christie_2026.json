@@ -1,0 +1,461 @@
+{
+ "results": [
+  {
+   "tournament_id": 5625,
+   "date": "01  - 06 September",
+   "location": "Shenzhen, China",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5625/li-ning-china-masters-2026/",
+   "tournament_model": {
+    "id": 5625,
+    "name": "LI-NING China Masters 2026",
+    "slug": "li-ning-china-masters-2026",
+    "start_date": "2026-09-01 00:00:00",
+    "end_date": "2026-09-06 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 24,
+    "tournament_series_id": 7,
+    "country_model": {
+     "name": "China",
+     "code_iso3": "CHN"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 28355,
+     "name": "MS",
+     "score_player": 74,
+     "score_opponent": 78,
+     "match_count": 2,
+     "match_win": 1,
+     "match_lose": 1,
+     "match_percent": 50,
+     "game_count": 4,
+     "game_win": 2,
+     "game_lose": 2,
+     "game_percent": 50,
+     "points_percent": 48.68421052631579,
+     "position": "R16"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5601,
+   "date": "17  - 23 August",
+   "location": "New Delhi, India",
+   "tmt_url": "https://bwfworldchampionships.bwfbadminton.com/results/5601/bwf-world-championships-2026",
+   "tournament_model": {
+    "id": 5601,
+    "name": "BWF World Championships 2026",
+    "slug": "bwf-world-championships-2026",
+    "start_date": "2026-08-17 00:00:00",
+    "end_date": "2026-08-23 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 20,
+    "tournament_series_id": 401,
+    "country_model": {
+     "name": "India",
+     "code_iso3": "IND"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 27956,
+     "name": "MS",
+     "score_player": 155,
+     "score_opponent": 133,
+     "match_count": 3,
+     "match_win": 2,
+     "match_lose": 1,
+     "match_percent": 66.66666666666666,
+     "game_count": 8,
+     "game_win": 5,
+     "game_lose": 3,
+     "game_percent": 62.5,
+     "points_percent": 53.81944444444444,
+     "position": "R16"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5622,
+   "date": "21  - 26 July",
+   "location": "Changzhou, China",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5622/victor-china-open-2026/",
+   "tournament_model": {
+    "id": 5622,
+    "name": "VICTOR China Open 2026",
+    "slug": "victor-china-open-2026",
+    "start_date": "2026-07-21 00:00:00",
+    "end_date": "2026-07-26 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 23,
+    "tournament_series_id": 44,
+    "country_model": {
+     "name": "China",
+     "code_iso3": "CHN"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 28344,
+     "name": "MS",
+     "score_player": 133,
+     "score_opponent": 133,
+     "match_count": 3,
+     "match_win": 2,
+     "match_lose": 1,
+     "match_percent": 66.66666666666666,
+     "game_count": 8,
+     "game_win": 4,
+     "game_lose": 4,
+     "game_percent": 50,
+     "points_percent": 50,
+     "position": "QF"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5213,
+   "date": "14  - 19 July",
+   "location": "Tokyo, Japan",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5213/daihatsu-japan-open-2026/",
+   "tournament_model": {
+    "id": 5213,
+    "name": "DAIHATSU Japan Open 2026",
+    "slug": "daihatsu-japan-open-2026",
+    "start_date": "2026-07-14 00:00:00",
+    "end_date": "2026-07-19 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 24,
+    "tournament_series_id": 42,
+    "country_model": {
+     "name": "Japan",
+     "code_iso3": "JPN"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25634,
+     "name": "MS",
+     "score_player": 30,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 41.66666666666667,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5528,
+   "date": "02  - 07 June",
+   "location": "Jakarta, Indonesia",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5528/polytron-indonesia-open-2026/",
+   "tournament_model": {
+    "id": 5528,
+    "name": "POLYTRON Indonesia Open 2026",
+    "slug": "polytron-indonesia-open-2026",
+    "start_date": "2026-06-02 00:00:00",
+    "end_date": "2026-06-07 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 23,
+    "tournament_series_id": 64,
+    "country_model": {
+     "name": "Indonesia",
+     "code_iso3": "INA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 27578,
+     "name": "MS",
+     "score_player": 231,
+     "score_opponent": 213,
+     "match_count": 5,
+     "match_win": 4,
+     "match_lose": 1,
+     "match_percent": 80,
+     "game_count": 12,
+     "game_win": 8,
+     "game_lose": 4,
+     "game_percent": 66.66666666666666,
+     "points_percent": 52.02702702702703,
+     "position": "2nd"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5649,
+   "date": "26  - 31 May",
+   "location": "Singapore, Singapore",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5649/kff-singapore-badminton-open-2026/",
+   "tournament_model": {
+    "id": 5649,
+    "name": "KFF Singapore Badminton Open 2026",
+    "slug": "kff-singapore-badminton-open-2026",
+    "start_date": "2026-05-26 00:00:00",
+    "end_date": "2026-05-31 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 24,
+    "tournament_series_id": 32,
+    "country_model": {
+     "name": "Singapore",
+     "code_iso3": "SIN"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 28483,
+     "name": "MS",
+     "score_player": 51,
+     "score_opponent": 52,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 3,
+     "game_win": 1,
+     "game_lose": 2,
+     "game_percent": 33.33333333333333,
+     "points_percent": 49.51456310679612,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5229,
+   "date": "19  - 24 May",
+   "location": "Kuala Lumpur, Malaysia",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5229/perodua-malaysia-masters-2026/",
+   "tournament_model": {
+    "id": 5229,
+    "name": "PERODUA Malaysia Masters 2026",
+    "slug": "perodua-malaysia-masters-2026",
+    "start_date": "2026-05-19 00:00:00",
+    "end_date": "2026-05-24 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 25,
+    "tournament_series_id": 50,
+    "country_model": {
+     "name": "Malaysia",
+     "code_iso3": "MYS"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25719,
+     "name": "MS",
+     "score_player": 153,
+     "score_opponent": 130,
+     "match_count": 3,
+     "match_win": 2,
+     "match_lose": 1,
+     "match_percent": 66.66666666666666,
+     "game_count": 8,
+     "game_win": 5,
+     "game_lose": 3,
+     "game_percent": 62.5,
+     "points_percent": 54.06360424028268,
+     "position": "QF"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5600,
+   "date": "24 April - 03 May",
+   "location": "Horsens, Denmark",
+   "tmt_url": "https://bwfthomasubercups.bwfbadminton.com/results/5600/bwf-thomas-uber-cup-finals-2026",
+   "tournament_model": {
+    "id": 5600,
+    "name": "BWF Thomas & Uber Cup Finals 2026",
+    "slug": "bwf-thomas-uber-cup-finals-2026",
+    "start_date": "2026-04-24 00:00:00",
+    "end_date": "2026-05-03 00:00:00",
+    "type_id": 1,
+    "tournament_category_id": 21,
+    "tournament_series_id": 124,
+    "country_model": {
+     "name": "Denmark",
+     "code_iso3": "DNK"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 1,
+     "name": "Singles",
+     "score_player": 133,
+     "score_opponent": 119,
+     "match_count": 3,
+     "match_win": 1,
+     "match_lose": 2,
+     "match_percent": 33.33333333333333,
+     "game_count": 7,
+     "game_win": 3,
+     "game_lose": 4,
+     "game_percent": 42.857142857142854,
+     "points_percent": 52.77777777777778,
+     "position": "N/A"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5688,
+   "date": "07  - 12 April",
+   "location": "Ningbo, China",
+   "tmt_url": "https://bwfbadminton.com/tournament/5688/bank-of-ningbo-badminton-asia-championships-2026",
+   "tournament_model": {
+    "id": 5688,
+    "name": "BANK OF NINGBO Badminton Asia Championships 2026",
+    "slug": "bank-of-ningbo-badminton-asia-championships-2026",
+    "start_date": "2026-04-07 00:00:00",
+    "end_date": "2026-04-12 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 11,
+    "tournament_series_id": 261,
+    "country_model": {
+     "name": "China",
+     "code_iso3": "CHN"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 28720,
+     "name": "MS",
+     "score_player": 122,
+     "score_opponent": 96,
+     "match_count": 3,
+     "match_win": 2,
+     "match_lose": 1,
+     "match_percent": 66.66666666666666,
+     "game_count": 6,
+     "game_win": 4,
+     "game_lose": 2,
+     "game_percent": 66.66666666666666,
+     "points_percent": 55.96330275229357,
+     "position": "QF"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5515,
+   "date": "03  - 08 March",
+   "location": "Birmingham, England",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5515/all-england-open-badminton-championships-2026/",
+   "tournament_model": {
+    "id": 5515,
+    "name": "All England Open Badminton Championships 2026",
+    "slug": "all-england-open-badminton-championships-2026",
+    "start_date": "2026-03-03 00:00:00",
+    "end_date": "2026-03-08 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 23,
+    "tournament_series_id": 122,
+    "country_model": {
+     "name": "England",
+     "code_iso3": "GBR"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 27462,
+     "name": "MS",
+     "score_player": 83,
+     "score_opponent": 89,
+     "match_count": 2,
+     "match_win": 1,
+     "match_lose": 1,
+     "match_percent": 50,
+     "game_count": 5,
+     "game_win": 2,
+     "game_lose": 3,
+     "game_percent": 40,
+     "points_percent": 48.25581395348838,
+     "position": "R16"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5269,
+   "date": "13  - 18 January",
+   "location": "New Delhi, India",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5269/yonex-sunrise-india-open-2026/",
+   "tournament_model": {
+    "id": 5269,
+    "name": "YONEX-SUNRISE India Open 2026",
+    "slug": "yonex-sunrise-india-open-2026",
+    "start_date": "2026-01-13 00:00:00",
+    "end_date": "2026-01-18 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 24,
+    "tournament_series_id": 5,
+    "country_model": {
+     "name": "India",
+     "code_iso3": "IND"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25892,
+     "name": "MS",
+     "score_player": 197,
+     "score_opponent": 178,
+     "match_count": 5,
+     "match_win": 4,
+     "match_lose": 1,
+     "match_percent": 80,
+     "game_count": 10,
+     "game_win": 8,
+     "game_lose": 2,
+     "game_percent": 80,
+     "points_percent": 52.53333333333333,
+     "position": "2nd"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5227,
+   "date": "06  - 11 January",
+   "location": "Kuala Lumpur, Malaysia",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5227/petronas-malaysia-open-2026/",
+   "tournament_model": {
+    "id": 5227,
+    "name": "PETRONAS Malaysia Open 2026",
+    "slug": "petronas-malaysia-open-2026",
+    "start_date": "2026-01-06 00:00:00",
+    "end_date": "2026-01-11 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 23,
+    "tournament_series_id": 6,
+    "country_model": {
+     "name": "Malaysia",
+     "code_iso3": "MYS"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25711,
+     "name": "MS",
+     "score_player": 158,
+     "score_opponent": 133,
+     "match_count": 4,
+     "match_win": 3,
+     "match_lose": 1,
+     "match_percent": 75,
+     "game_count": 8,
+     "game_win": 6,
+     "game_lose": 2,
+     "game_percent": 75,
+     "points_percent": 54.29553264604811,
+     "position": "3rd"
+    }
+   ]
+  }
+ ],
+ "drawCount": 1
+}

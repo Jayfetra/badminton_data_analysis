@@ -14,7 +14,10 @@ from bwf_player.models import (
     PlayerResult,
     RankingEvent,
     SearchResult,
+    TournamentEntry,
+    TournamentHistory,
 )
+from bwf_player.tournaments import get_tournaments, history_window
 
 __version__ = "0.1.0"
 
@@ -29,6 +32,10 @@ __all__ = [
     "PlayerResult",
     "RankingEvent",
     "SearchResult",
+    "TournamentEntry",
+    "TournamentHistory",
     "format_result",
+    "get_tournaments",
+    "history_window",
     "lookup_player",
 ]

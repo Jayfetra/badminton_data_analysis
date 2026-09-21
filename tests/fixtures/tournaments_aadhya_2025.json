@@ -1,0 +1,135 @@
+{
+ "results": [
+  {
+   "tournament_id": 5306,
+   "date": "04  - 09 November",
+   "location": "Hyderabad, India",
+   "tmt_url": "https://bwfbadminton.com/tournament/5306/telangana-india-international-challenge-2025",
+   "tournament_model": {
+    "id": 5306,
+    "name": "Telangana India International Challenge 2025",
+    "slug": "telangana-india-international-challenge-2025",
+    "start_date": "2025-11-04 00:00:00",
+    "end_date": "2025-11-09 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 5,
+    "tournament_series_id": 517,
+    "country_model": {
+     "name": "India",
+     "code_iso3": "IND"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 26122,
+     "name": "WS",
+     "score_player": 40,
+     "score_opponent": 44,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 47.61904761904761,
+     "position": "Qual. R64"
+    },
+    {
+     "event_id": 26119,
+     "name": "WD",
+     "score_player": 30,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 41.66666666666667,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5206,
+   "date": "28 October - 02 November",
+   "location": "Mangalore, India",
+   "tmt_url": "https://bwfbadminton.com/tournament/5206/mangalore-india-international-challenge-2025",
+   "tournament_model": {
+    "id": 5206,
+    "name": "Mangalore India International Challenge 2025",
+    "slug": "mangalore-india-international-challenge-2025",
+    "start_date": "2025-10-28 00:00:00",
+    "end_date": "2025-11-02 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 5,
+    "tournament_series_id": 518,
+    "country_model": {
+     "name": "India",
+     "code_iso3": "IND"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25599,
+     "name": "WS",
+     "score_player": 88,
+     "score_opponent": 88,
+     "match_count": 2,
+     "match_win": 1,
+     "match_lose": 1,
+     "match_percent": 50,
+     "game_count": 5,
+     "game_win": 3,
+     "game_lose": 2,
+     "game_percent": 60,
+     "points_percent": 50,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5418,
+   "date": "12  - 17 August",
+   "location": "Nakorn Ratchasima, Thailand",
+   "tmt_url": "https://bwfbadminton.com/tournament/5418/toyota-thailand-international-challenge-2025",
+   "tournament_model": {
+    "id": 5418,
+    "name": "TOYOTA Thailand International Challenge 2025",
+    "slug": "toyota-thailand-international-challenge-2025",
+    "start_date": "2025-08-12 00:00:00",
+    "end_date": "2025-08-17 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 5,
+    "tournament_series_id": 76,
+    "country_model": {
+     "name": "Thailand",
+     "code_iso3": "THA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 27071,
+     "name": "WS",
+     "score_player": 69,
+     "score_opponent": 74,
+     "match_count": 2,
+     "match_win": 1,
+     "match_lose": 1,
+     "match_percent": 50,
+     "game_count": 4,
+     "game_win": 2,
+     "game_lose": 2,
+     "game_percent": 50,
+     "points_percent": 48.25174825174825,
+     "position": "R32"
+    }
+   ]
+  }
+ ],
+ "drawCount": 1
+}

@@ -1,0 +1,81 @@
+{
+ "results": [
+  {
+   "tournament_id": 5678,
+   "date": "13  - 17 May",
+   "location": "Saint Denis, Réunion",
+   "tmt_url": "https://bwfbadminton.com/tournament/5678/saint-denis-reunion-open-2026",
+   "tournament_model": {
+    "id": 5678,
+    "name": "SAINT DENIS Reunion Open 2026",
+    "slug": "saint-denis-reunion-open-2026",
+    "start_date": "2026-05-13 00:00:00",
+    "end_date": "2026-05-17 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 5,
+    "tournament_series_id": 496,
+    "country_model": {
+     "name": "Réunion",
+     "code_iso3": "REU"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 28660,
+     "name": "WS",
+     "score_player": 73,
+     "score_opponent": 60,
+     "match_count": 2,
+     "match_win": 1,
+     "match_lose": 1,
+     "match_percent": 50,
+     "game_count": 4,
+     "game_win": 2,
+     "game_lose": 2,
+     "game_percent": 50,
+     "points_percent": 54.88721804511278,
+     "position": "R16"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5681,
+   "date": "03  - 08 March",
+   "location": "Singapore, Singapore",
+   "tmt_url": "https://bwfbadminton.com/tournament/5681/sbh-singapore-international-series-2026",
+   "tournament_model": {
+    "id": 5681,
+    "name": "SBH Singapore International Series 2026",
+    "slug": "sbh-singapore-international-series-2026",
+    "start_date": "2026-03-03 00:00:00",
+    "end_date": "2026-03-08 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 6,
+    "tournament_series_id": 640,
+    "country_model": {
+     "name": "Singapore",
+     "code_iso3": "SIN"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 28673,
+     "name": "WS",
+     "score_player": 49,
+     "score_opponent": 54,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 3,
+     "game_win": 1,
+     "game_lose": 2,
+     "game_percent": 33.33333333333333,
+     "points_percent": 47.57281553398058,
+     "position": "Qual. R32"
+    }
+   ]
+  }
+ ],
+ "drawCount": 1
+}

@@ -98,3 +98,29 @@ def test_live_end_to_end_lookup_and_report(client: BwfHttpClient) -> None:
     assert "Personal details" in text and "Ranking (MEN'S SINGLES)" in text
 
     assert lookup_player("christie", client).profile is None  # ambiguous: nothing further fetched
+
+
+def test_live_tournaments_in_the_last_year(client: BwfHttpClient) -> None:
+    from bwf_player import get_tournaments, history_window
+    from bwf_player.tournaments import overlaps
+
+    since, until = history_window()
+    history = get_tournaments("73442", client)  # Jonatan Christie
+    assert (history.since, history.until) == (since, until)
+    assert len(history.entries) >= 5, "an active top player enters many tournaments in a year"
+    starts = [e.start_date for e in history.entries]
+    assert starts == sorted(starts)
+    for entry in history.entries:
+        assert overlaps(entry, since, until)
+        assert entry.name and entry.event_code and isinstance(entry.event_id, int)
+        assert entry.matches_won is not None and entry.matches_lost is not None
+        assert entry.games_won is not None and entry.games_lost is not None
+    assert any(e.category for e in history.entries), "the calendar should give at least one category"
+    assert any(e.position for e in history.entries)
+
+
+def test_live_tournaments_of_an_unknown_player(client: BwfHttpClient) -> None:
+    from bwf_player import get_tournaments
+
+    history = get_tournaments("999999999", client)
+    assert history.entries == [] and history.notes
