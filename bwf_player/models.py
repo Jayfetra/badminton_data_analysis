@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -48,16 +48,31 @@ class PlayerProfile(BaseModel):
     notes: list[str] = Field(default_factory=list)
 
 
+class RankingEvent(BaseModel):
+    """A ranking a player appears in, e.g. id "6-0" = "MEN'S SINGLES"."""
+
+    id: str
+    name: str
+
+
 class PlayerRanking(BaseModel):
-    """Ranking details (R3). `is_ranked=False` means no ranking data is available."""
+    """Ranking details (R3) for one event.
+
+    `is_ranked=False` means the site lists no current rank; `notes` says why.
+    `weeks_at_current_rank` counts consecutive weekly ranking lists, ending with the latest one
+    (`as_of`), in which the player held `current_rank`; `at_rank_since` is the first of them.
+    """
 
     player_id: str
-    event: str | None = None
+    event: RankingEvent | None = None
+    other_events: list[RankingEvent] = Field(default_factory=list)
     is_ranked: bool = False
     current_rank: int | None = None
     weeks_at_current_rank: int | None = None
-    weeks_source: Literal["site_reported", "derived_from_history"] | None = None
-    note: str | None = None
+    at_rank_since: date | None = None
+    as_of: date | None = None
+    weeks_source: Literal["derived_from_history"] | None = None
+    notes: list[str] = Field(default_factory=list)
 
 
 class PlayerResult(BaseModel):

@@ -12,6 +12,7 @@ _TRANSLITERATE = str.maketrans(
 )
 _NON_WORD = re.compile(r"[\W_]+")
 _WHITESPACE = re.compile(r"\s+")
+_PLAYER_ID = re.compile(r"[0-9]{1,10}")
 
 
 def sanitize_query(raw: object, max_length: int = 100) -> str:
@@ -45,3 +46,13 @@ def normalize_name(text: str) -> str:
 def derive_slug(name: str) -> str:
     """Build a URL slug the way the site does (e.g. 'Jonatan CHRISTIE' -> 'jonatan-christie')."""
     return "-".join(normalize_name(name).split())
+
+
+def validate_player_id(player_id: object) -> str:
+    """Return ``player_id`` as a normalised digit string; the API misbehaves on anything else."""
+    if isinstance(player_id, bool) or not isinstance(player_id, (str, int)):
+        raise InvalidInputError("player_id must be a positive integer.")
+    text = str(player_id).strip()
+    if not _PLAYER_ID.fullmatch(text) or int(text) == 0:
+        raise InvalidInputError("player_id must be a positive integer of at most 10 digits.")
+    return str(int(text))

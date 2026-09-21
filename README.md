@@ -2,7 +2,7 @@
 
 Look up a badminton player by name and retrieve their profile (nationality, height, playing hand) and ranking (current rank, time at rank) from bwfbadminton.com.
 
-**Status:** Iterations 1-2 done (player search, personal details). Ranking arrives in Iteration 3; see [docs/PRD_master.md](docs/PRD_master.md).
+**Status:** Iterations 1-3 done (player search, personal details, ranking). Iteration 4 finalises the notebook; see [docs/PRD_master.md](docs/PRD_master.md).
 
 ## Usage
 
@@ -24,7 +24,18 @@ profile.nationality, profile.height_cm, profile.playing_hand   # ("Indonesia", 1
 profile.missing_fields, profile.notes                          # fields the site does not list
 ```
 
-A field the site does not list is `None` (named in `missing_fields`, explained in `notes`); the rest of the profile is still returned.
+```python
+from bwf_player.ranking import get_ranking
+
+ranking = get_ranking(result.best_match.player_id)
+ranking.event.name, ranking.current_rank               # ("MEN'S SINGLES", 1)
+ranking.weeks_at_current_rank, ranking.at_rank_since   # (4, date(2026, 8, 25))
+ranking.other_events                                   # e.g. doubles; pick one with get_ranking(id, event_id="9-90070")
+```
+
+An unranked player returns `is_ranked=False`, `current_rank=None` and a note. Weeks at rank are derived from the weekly ranking history (the site's own "consecutive weeks" figure is for the player's best rank, not the current one).
+
+A profile field the site does not list is `None` (named in `missing_fields`, explained in `notes`); the rest of the profile is still returned.
 
 Search tolerates case, extra whitespace, accents, reversed name order and typos in full names. A partial name such as "christie" returns ranked candidates (`ambiguous`) instead of guessing. Responses are cached under `.cache/bwf_player` (a repeat lookup makes no requests).
 

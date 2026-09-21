@@ -10,6 +10,16 @@ from bwf_player.config import BwfConfig
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
+# (playerId, rankingEvent) -> fixture suffix; the events fixture is per player.
+_RANKING_EVENTS = {
+    "73442": "christie", "39881": "christie",
+    "89438": "aadhya_two_events", "50152": "lee_chong_wei",
+}
+_RANKING_DATA = {
+    ("73442", "6-0"): "christie", ("89438", "7-0"): "aadhya_ws", ("89438", "9-90070"): "aadhya_wd",
+    ("50152", "6-0"): "lee_chong_wei", ("39881", "6-0"): "molis",
+}
+
 _SUMMARY_FIXTURES = {
     "73442": "summary_christie.json",
     "18228": "summary_marin.json",
@@ -56,6 +66,15 @@ class FakeApiClient:
         if endpoint == "vue-player-summary":
             fixture = _SUMMARY_FIXTURES.get(str(params.get("playerId")), "summary_unknown_player.json")
             return load_fixture(fixture)
+        if endpoint == "vue-player-ranking-events":
+            name = _RANKING_EVENTS.get(str(params.get("playerId")))
+            return load_fixture(f"ranking_events_{name}.json" if name else "ranking_events_none.json")
+        if endpoint in ("vue-player-ranking-current", "vue-player-ranking-history"):
+            key = (str(params.get("playerId")), str(params.get("rankingEvent")))
+            if key not in _RANKING_DATA:
+                raise AssertionError(f"unexpected ranking request {endpoint} {key}")
+            kind = "current" if endpoint.endswith("current") else "history"
+            return load_fixture(f"ranking_{kind}_{_RANKING_DATA[key]}.json")
         raise AssertionError(f"unexpected endpoint {endpoint}")
 
     def calls_to(self, endpoint: str) -> list[dict[str, Any]]:

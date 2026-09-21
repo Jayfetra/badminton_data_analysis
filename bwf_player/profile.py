@@ -13,17 +13,16 @@ from __future__ import annotations
 
 import logging
 import math
-import re
 from typing import Any
 
-from bwf_player.exceptions import BwfClientError, InvalidInputError
+from bwf_player.exceptions import BwfClientError
 from bwf_player.http_client import BwfHttpClient
 from bwf_player.models import PlayerProfile
+from bwf_player.names import validate_player_id
 
 logger = logging.getLogger(__name__)
 
 SUMMARY_ENDPOINT = "vue-player-summary"
-_PLAYER_ID = re.compile(r"[0-9]{1,10}")
 _HANDS = {"1": "Right", "2": "Left"}
 _MAX_HEIGHT_CM = 300.0
 _FIELDS = ("nationality", "height", "playing_hand")
@@ -42,7 +41,7 @@ def get_profile(player_id: str | int, client: BwfHttpClient | None = None) -> Pl
             unrelated player.
         BwfClientError: the response was malformed or described a different player.
     """
-    pid = _validate_player_id(player_id)
+    pid = validate_player_id(player_id)
     client = client or BwfHttpClient()
     payload = client.get_json(
         SUMMARY_ENDPOINT, {"drawCount": 1, "playerId": pid, "isPara": "false"}
@@ -94,15 +93,6 @@ def parse_profile(payload: Any, player_id: str) -> PlayerProfile:
         missing_fields=missing,
         notes=notes,
     )
-
-
-def _validate_player_id(player_id: object) -> str:
-    if isinstance(player_id, bool) or not isinstance(player_id, (str, int)):
-        raise InvalidInputError("player_id must be a positive integer.")
-    text = str(player_id).strip()
-    if not _PLAYER_ID.fullmatch(text) or int(text) == 0:
-        raise InvalidInputError("player_id must be a positive integer of at most 10 digits.")
-    return str(int(text))
 
 
 def _clean_text(value: object) -> str | None:

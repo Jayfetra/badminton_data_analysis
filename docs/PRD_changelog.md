@@ -1,5 +1,25 @@
 # PRD Changelog
 
+## Iteration 3 — 2026-09-21 (R3: ranking)
+
+**What changed**
+- Implemented `ranking.get_ranking(player_id, client=None, *, event_id=None)` plus pure parsers (`parse_events`, `parse_current_rank`, `parse_history`, `trailing_run`). Three requests per player: events, current rank, history.
+- Earlier-iteration code touched (required by this iteration): `models.PlayerRanking` (Iteration 0 stub, unused until now) was reshaped: `event` is now a `RankingEvent`, added `other_events`, `at_rank_since`, `as_of`; `note` became `notes`; `weeks_source` lost the never-used `"site_reported"` value. `validate_player_id` moved from `profile.py` to `names.py` so R2 and R3 share it (behaviour unchanged; all R2 tests still pass). `tests/fakes.py` gained the ranking endpoints.
+- Notebook: added a ranking cell. README: usage. PRD: endpoint table, R3 method, schema, open questions.
+
+**Why**
+- **Correction of an earlier assumption.** PRD v0.1-0.3 said the site's `consecutive` value might be the weeks at the current rank. Real data disproved it: it is the streak at the player's best rank (Aadhya SHINE: current 423, `consecutive` says rank 364 / 3 weeks; Lee Chong Wei: rank 1 / 138 weeks). Weeks at current rank are therefore derived from the weekly history; Christie's derived value (4 weeks since 2026-08-25) equals the site's streak, which confirms the counting convention.
+- The site's history `results` is a JSON string inside JSON, so it is decoded twice; a malformed history degrades to "weeks unknown" instead of failing the whole request.
+
+**What was tested**
+- Offline: 214 tests in total (83 new for R3). Real fixtures: ranked player (rank, weeks, since, as-of, event), player with two events (default, explicit selection, unknown/malformed event id), retired unranked player (`"-"`, no history request), unknown id (empty events), single-row history, exact request parameters, 10 malformed player ids (no request made). Synthetic cases: run boundaries, an earlier equal-rank run not counted, latest rank differing from current, a week without rank ending the run, empty/None/unreadable history, duplicate/odd rows, current-rank placeholders and unrecognised values, unsafe event ids, malformed payloads, Cloudflare block.
+- Live: 8 tests in total (2 new): active player (rank, weeks, dates consistent and fresh), retired player (unranked), unknown id. Notebook run end to end for four players.
+- Full output: `test_results/latest.txt`.
+
+**Findings**
+- Unknown player id and never-ranked player are indistinguishable at the events endpoint.
+- R1 limitation found: "Dan Lin" does not find "LIN Dan" (details in PRD section 8, 1a-d). Not changed in this iteration.
+
 ## Iteration 2 — 2026-09-21 (R2: personal details)
 
 **What changed**

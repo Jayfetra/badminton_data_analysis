@@ -62,3 +62,27 @@ def test_live_profile_with_unlisted_details_and_unknown_id(client: BwfHttpClient
     sparse = get_profile("89438", client)
     assert sparse.player_found and sparse.missing_fields == ["nationality", "height", "playing_hand"]
     assert get_profile("999999999", client).player_found is False
+
+
+def test_live_ranking_of_an_active_player(client: BwfHttpClient) -> None:
+    from datetime import date, timedelta
+
+    from bwf_player.ranking import get_ranking
+
+    ranking = get_ranking("73442", client)
+    assert ranking.is_ranked and ranking.event.name == "MEN'S SINGLES"
+    assert isinstance(ranking.current_rank, int) and ranking.current_rank >= 1
+    assert ranking.weeks_at_current_rank >= 1 and ranking.weeks_source == "derived_from_history"
+    assert ranking.at_rank_since <= ranking.as_of
+    assert (ranking.as_of - ranking.at_rank_since).days >= 6 * (ranking.weeks_at_current_rank - 1)
+    assert date.today() - ranking.as_of < timedelta(days=45), "ranking history looks stale"
+
+
+def test_live_ranking_of_a_retired_and_an_unknown_player(client: BwfHttpClient) -> None:
+    from bwf_player.ranking import get_ranking
+
+    retired = get_ranking("50152", client)  # Lee Chong Wei
+    assert retired.is_ranked is False and retired.current_rank is None
+    assert retired.notes and retired.event is not None
+    unknown = get_ranking("999999999", client)
+    assert unknown.is_ranked is False and unknown.event is None and unknown.notes
