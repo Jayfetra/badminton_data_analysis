@@ -26,7 +26,7 @@
 - The plan said the notebook extra would gain `pandas`. It did not: the notebook uses `sqlite3` from the standard library, keeping the install light (README shows the `pandas.read_sql` one-liner). The plan called the command line optional; it was added.
 
 **Findings / still open**
-- Still awaiting the user: the window rule (tournaments that overlap the window count; PRD section 8, item 8) and which ranking events to report (item 5).
+- Both questions to the user are resolved (2026-09-21): overlapping tournaments count, and the first ranking event is enough (PRD section 8, items 8 and 5).
 - The terms and conditions of bwfbadminton.com remain unreviewed (item 2 and new item 9), which matters more now that a history costs 25-40 requests instead of about 5.
 - One player per call by design; no batch mode.
 
@@ -105,7 +105,7 @@
 - Not yet verified (Iteration 6): match shape for team events and group stages (open question 6). Para players are not covered (open question 7).
 
 **Open for the user**
-- Confirm the window rule (tournaments that overlap the window count, not only those that start in it; PRD section 8, item 8).
+- Resolved on 2026-09-21: the user confirmed that overlapping tournaments count (PRD section 8, item 8).
 
 ## Iteration 4 — 2026-09-21 (final notebook, README, full regression)
 
@@ -128,7 +128,7 @@
 - A fresh clone of the repository was installed in a new virtual environment and its offline suite run (result in the iteration report).
 
 **Findings / still open**
-- Awaiting the user: which ranking event(s) to report (PRD section 8, item 5).
+- Resolved on 2026-09-21: the user decided that reporting the first ranking event, with the others in `other_events`, is enough (PRD section 8, item 5). The terms-of-service review (item 2 and 9) stays open; the user acknowledged it.
 - R1 limitation "Dan Lin" -> "LIN Dan" is documented, not fixed (README, PRD section 8, 1a-d).
 - Terms and conditions of bwfbadminton.com remain unreviewed.
 

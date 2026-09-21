@@ -196,12 +196,12 @@ pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live sm
 2. **ToS.** Read `/terms-and-conditions/` from an unblocked network and record the scraping stance here.
 3. ~~Bio field names~~ **Resolved in Iteration 2** (see `vue-player-summary`). **Ranking field names** also **resolved in Iteration 3** (see the ranking endpoints; real responses are saved as fixtures).
 4. ~~Height format~~ **Resolved:** centimetres, returned as `height_cm` (float).
-5. **Which ranking event (awaiting your decision).** Implemented as: the first event the site lists, with the others in `other_events` and selectable via `event_id`. Confirm this is what you want, or whether the result should contain all events (2 more requests per extra event).
+5. ~~Which ranking event~~ **Decided by the user (2026-09-21): the current behaviour is enough.** The result reports the first event the site lists, with the others in `other_events` and selectable via `event_id`. Reporting all events is not needed for now.
 6. ~~Team events and group stages~~ **Resolved in Iteration 6.** Team events and group stages use the same match shape as ordinary events (Thomas Cup ties, a finals group stage, qualification plus main draw, all fixtures). New unusual cases found and handled: a draw whose matches are an object instead of a list, byes, and start times that must come from `match_start_time_details`. Not seen in the data: a disqualification (`score_status` 3) and a match still in progress (`match_state` other than `F`); both are handled defensively (status `unknown` or no usable winner, with a note) but untested against real data.
 7. **Para-badminton (open, limitation).** Every request sends `isPara=false`, so a para player's tournaments are not covered. Supporting them needs the para variants of the same endpoints; not planned.
-8. **Window rule (decided by the assistant, still awaiting your confirmation).** A tournament counts when its dates overlap the window, not only when it starts inside it. Effect on the default window (2025-09-21 to 2026-09-21): China Masters 2025 (16-21 Sep 2025) is included. Say so if you want start-date-in-window instead.
+8. ~~Window rule~~ **Confirmed by the user (2026-09-21): overlap counts.** A tournament is included when its dates overlap the window, not only when it starts inside it. Effect on the default window (2025-09-21 to 2026-09-21): China Masters 2025 (16-21 Sep 2025) is included.
 
-9. **Terms of service (still open, now more relevant).** The history download makes 25-40 requests per player rather than about 5. The site's terms and conditions have still not been read from an unblocked network (item 2). Please check them before using the tool beyond personal research.
+9. **Terms of service (still open; acknowledged by the user on 2026-09-21).** The history download makes 25-40 requests per player rather than about 5. The site's terms and conditions have still not been read from an unblocked network (item 2). The user understands the risk and will check them before using the tool beyond personal research.
 
 ## 9. Development procedure
 
