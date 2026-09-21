@@ -2,7 +2,7 @@
 
 Look up a badminton player by name and retrieve their profile (nationality, height, playing hand) and ranking (current rank, time at rank) from bwfbadminton.com.
 
-**Status:** Iteration 1 done (player search). Profile and ranking arrive in Iterations 2-3; see [docs/PRD_master.md](docs/PRD_master.md).
+**Status:** Iterations 1-2 done (player search, personal details). Ranking arrives in Iteration 3; see [docs/PRD_master.md](docs/PRD_master.md).
 
 ## Usage
 
@@ -16,7 +16,17 @@ result.status                 # "found" | "ambiguous" | "not_found"
 result.best_match.profile_url # https://bwfbadminton.com/player/73442/jonatan-christie
 ```
 
-Tolerates case, extra whitespace, accents, reversed name order and typos in full names. A partial name such as "christie" returns ranked candidates (`ambiguous`) instead of guessing. Responses are cached under `.cache/bwf_player` (a repeat lookup makes no requests).
+```python
+from bwf_player.profile import get_profile
+
+profile = get_profile(result.best_match.player_id)
+profile.nationality, profile.height_cm, profile.playing_hand   # ("Indonesia", 179.0, "Right")
+profile.missing_fields, profile.notes                          # fields the site does not list
+```
+
+A field the site does not list is `None` (named in `missing_fields`, explained in `notes`); the rest of the profile is still returned.
+
+Search tolerates case, extra whitespace, accents, reversed name order and typos in full names. A partial name such as "christie" returns ranked candidates (`ambiguous`) instead of guessing. Responses are cached under `.cache/bwf_player` (a repeat lookup makes no requests).
 
 ## Setup
 
@@ -31,6 +41,7 @@ pip install -e ".[dev]"        # add ",notebook" to also install Jupyter
 ```bash
 pytest                # offline unit tests (default)
 pytest -m live        # live smoke tests against bwfbadminton.com
+python scripts/save_test_results.py   # run both, save output to test_results/latest.txt
 ```
 
 ## Notes

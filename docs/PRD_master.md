@@ -1,6 +1,6 @@
 # PRD Master — BWF Player Lookup
 
-**Version:** 0.2 (Iteration 1: R1 search) · **Last updated:** 2026-09-21
+**Version:** 0.3 (Iteration 2: R2 personal details) · **Last updated:** 2026-09-21
 
 Single source of truth for requirements, architecture decisions, data schema and open questions.
 
@@ -31,7 +31,8 @@ Method: `curl` with a browser User-Agent, inspecting page source and the inline 
 |----------|--------|-----|--------|
 | `vue-popular-players` | `searchKey`, `activeTab=1`, `page` | R1 server search. Returns `results[]` (`id`, `slug`, `name_display`, `country_model`, ...) and `pagination` (30 per page, `next_page_url`). **Strict, case-insensitive substring match on `name_display`**: "cristie" returns 0, "tai tzu" returns 0 (site stores "Tzu Ying TAI"). Empty `searchKey` pages through all players. `activeTab=0` returns HTTP 500. | Used (Iteration 1) |
 | `vue-h2h-players` | `searchKey` (ignored), `drawCount`, `drawTab` | R1 index. Returns **every** player as `{value: id, text: "Given FAMILY"}` in one response (3,429 entries, ~130 KB), regardless of `searchKey`. No slug or country. **Incomplete**: e.g. Kento MOMOTA and Tai Tzu Ying are absent. | Used (Iteration 1) |
-| `vue-player-bio` | `playerId`, `activeTab` | R2 details. | Response shape **not yet inspected** |
+| `vue-player-summary` | `playerId`, `drawCount`, `isPara=false` | **R2 source.** `results` holds `id`, `name_display`, `nationality` (ISO code), `country_model.name`, `bio_model.height` (cm, e.g. `"179.00"`) and `bio_model.plays` (1 = right, 2 = left; the site shows anything else as "n/a"). An unknown id returns `results: {}`. **A malformed id (`abc`) returns an unrelated player**, so ids are validated and the returned id is checked. | Used (Iteration 2) |
+| `vue-player-bio` | `playerId`, `activeTab=5` | Returns `height` (`"179"`), `hand` (`"R"`/`"L"`), `age`, `current_residence`, ... but **no nationality**. Redundant with the summary endpoint for R2. | Inspected, not used |
 | `vue-player-ranking-events` | `playerId`, `activeTab`, `isPara` | R3: lists ranking events; the first is the default. | Not yet tested |
 | `vue-player-ranking-current` | `rankingEvent`, `playerId`, `isPara` | R3 current rank. | Not yet tested |
 | `vue-player-ranking-highest` | `rankingEvent`, `playerId`, `isPara` | Not needed for R3. | Not yet tested |
@@ -69,6 +70,8 @@ bwf_player/
   ranking.py      R3 (Iteration 3)
 notebook.ipynb    end-to-end demo
 tests/            pytest; offline unit tests on saved fixtures; @pytest.mark.live smoke tests
+scripts/          save_test_results.py: runs both suites, writes test_results/latest.txt
+test_results/     latest.txt: full output of the most recent test run (overwritten each iteration)
 ```
 
 ### Framework recommendation
@@ -86,6 +89,12 @@ tests/            pytest; offline unit tests on saved fixtures; @pytest.mark.liv
 - **Scoring**: `max(token_sort_ratio, 0.9 * token_set_ratio)` from rapidfuzz on normalized names. Same words in any order = 100 (so reversed names need no special code); "jonathan cristie" vs "Jonatan CHRISTIE" = 94; a partial name ("christie", "lee") = a flat 90 for every player containing it, so partial queries are `ambiguous` by design. `WRatio` was rejected because it scores shorter names higher for the same partial query.
 - **Profile URL**: `https://bwfbadminton.com/player/{id}/{slug}`. The slug comes from the server when available, otherwise it is derived from the name (`Jonatan CHRISTIE` -> `jonatan-christie`). The id is authoritative: the site 302-redirects `/player/{id}/` and `/player/{id}/<any-slug>` to the canonical URL.
 - **Request economy**: a repeat lookup of a known player costs zero requests (index + results cached). A first-ever lookup costs one session bootstrap plus the index; players missing from the index cost 1-6 more (up to 3 phrases x 2 pages).
+- **Personal details (R2, implemented).** One request per player to `vue-player-summary`, the same source the site's profile header renders. `profile.get_profile(player_id)`:
+  - *Input*: `player_id` must be a positive integer of at most 10 ASCII digits (`int` or `str`); anything else raises `InvalidInputError` **before any request**, because the API answers a malformed id with an unrelated player. The returned `id` must also equal the requested id, otherwise `BwfClientError`.
+  - *Nationality*: `country_model.name` ("Indonesia"); falls back to the ISO code (`INA`) with a note if there is no country name.
+  - *Height*: parsed to cm (float). `null`/blank means "not listed"; a value that is not a number, not finite, `<= 0` or `> 300` becomes `null` with an "unusable value" note.
+  - *Hand*: `1` -> `Right`, `2` -> `Left` (the site's own mapping); any other value -> `null` with a note.
+  - *Missing data*: each unlisted field is `null`, named in `missing_fields`, and explained in `notes`; the other fields are still returned. A player the site does not know returns `player_found=False` (no exception). Verified on a real player with nothing listed (Aadhya SHINE).
 - **Input safety.** Names are sanitized as above and passed to the API only via `requests` `params` (encoded), never string-concatenated into URLs. Server queries use only the normalized (alphanumeric) tokens. Player ids/slugs are URL-quoted when building profile URLs.
 - **No secrets** are used or stored. The session cookie is fetched at runtime and kept in memory.
 
@@ -95,7 +104,7 @@ See `bwf_player/models.py`.
 
 - `PlayerCandidate`: `player_id`, `slug`, `name`, `country`, `profile_url`, `score` (0-100)
 - `SearchResult`: `query`, `status` (`found` | `ambiguous` | `not_found`), `best_match`, `candidates`, `message`
-- `PlayerProfile`: `player_id`, `name`, `nationality`, `height`, `playing_hand` (`Right` | `Left` | null), `missing_fields`
+- `PlayerProfile`: `player_id`, `player_found`, `name`, `nationality` (country name), `height_cm` (float), `playing_hand` (`Right` | `Left` | null), `missing_fields`, `notes`
 - `PlayerRanking`: `player_id`, `event`, `is_ranked`, `current_rank`, `weeks_at_current_rank`, `weeks_source`, `note`
 - `PlayerResult`: `search`, `profile`, `ranking`, `fetched_at`
 
@@ -103,7 +112,7 @@ BWF raw field names for bio/ranking are unconfirmed; models are the package's ow
 
 ## 6. Testing strategy
 
-pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live smoke tests are marked `@pytest.mark.live` and excluded by default (`pytest -m live` to run). Required edge cases: exact, fuzzy, ambiguous, not found, empty input, special characters, missing fields, unranked player.
+pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live smoke tests are marked `@pytest.mark.live` and excluded by default (`pytest -m live` to run). `python scripts/save_test_results.py` runs both suites and saves the full output to `test_results/latest.txt` (overwritten every iteration; `--no-live` skips the live suite). Required edge cases: exact, fuzzy, ambiguous, not found, empty input, special characters, missing fields, unranked player.
 
 ## 7. Iteration plan
 
@@ -111,7 +120,7 @@ pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live sm
 |-----------|-------|--------|
 | 0 | Scaffold, investigation, PRD v0.1, first commit | Done |
 | 1 | R1 search + tests | Done |
-| 2 | R2 profile + tests | Pending |
+| 2 | R2 profile + tests | Done |
 | 3 | R3 ranking + tests | Pending |
 | 4 | Notebook, README, full regression | Pending |
 
@@ -120,6 +129,6 @@ pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live sm
 1. ~~Search coverage~~ **Resolved in Iteration 1.** `vue-popular-players` searches the whole database but is a strict substring match; `vue-h2h-players` is a complete-looking but incomplete index. Hybrid design in section 4.
 1a. **Known limitations of R1.** (a) A typo inside a *single-word* partial name ("cristie", "jonathan") is not matched; typo tolerance applies to full names. (b) A typo'd query for a player absent from the index (Momota, Tai Tzu Ying, Carolina Marin) will not be found, because the server search is strict. (c) If a typo'd query closely resembles a different indexed player, that player can be returned as `found`. Mitigation if any of these matter: page the full player list once (about 100+ requests at 30 per page; not done, given the block risk).
 2. **ToS.** Read `/terms-and-conditions/` from an unblocked network and record the scraping stance here.
-3. **Bio and ranking field names** (Iterations 2 and 3): capture real responses as fixtures first.
-4. **Height format.** Units and representation on the site (cm? string?). Decide after inspecting bio JSON.
+3. ~~Bio field names~~ **Resolved in Iteration 2** (see `vue-player-summary`). **Ranking field names** remain (Iteration 3): capture real responses as fixtures first.
+4. ~~Height format~~ **Resolved:** centimetres, returned as `height_cm` (float).
 5. **Which ranking event** to report when a player has several (singles/doubles/mixed). Default proposal: the first event the site lists; return all if cheap. Confirm with the user in Iteration 3.

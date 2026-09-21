@@ -32,14 +32,20 @@ class SearchResult(BaseModel):
 
 
 class PlayerProfile(BaseModel):
-    """Personal details (R2). Missing fields are None and listed in `missing_fields`."""
+    """Personal details (R2).
+
+    A field the site does not list is None, named in `missing_fields`, and explained in
+    `notes`. `player_found` is False only when the site has no player with this id.
+    """
 
     player_id: str
+    player_found: bool = True
     name: str | None = None
     nationality: str | None = None
-    height: str | None = None
+    height_cm: float | None = None
     playing_hand: Literal["Right", "Left"] | None = None
     missing_fields: list[str] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
 
 
 class PlayerRanking(BaseModel):

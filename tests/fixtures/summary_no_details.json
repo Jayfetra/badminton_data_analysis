@@ -1,0 +1,28 @@
+{
+ "results": {
+  "id": 89438,
+  "slug": "aadhya-shine",
+  "name_display": "Aadhya SHINE",
+  "name_display_bold": "<span class=\"name-1\">Aadhya</span> <span class=\"name-2\">SHINE</span>",
+  "name_display_break": "<span class=\"name-1\">Aadhya</span><br><span class=\"name-2\">SHINE</span>",
+  "first_name": "Aadhya",
+  "last_name": "SHINE",
+  "name_type_id": 0,
+  "profile_type": 0,
+  "date_of_birth": null,
+  "nationality": null,
+  "avatar": {
+   "url_original": "https://extranet.bwfbadminton.com/images/profile_male.jpg",
+   "url_cloudinary": "https://extranet.bwfbadminton.com/images/profile_male.jpg"
+  },
+  "hero_image": {
+   "url": "https://extranet.bwfbadminton.com/images/player-hero-02.jpg",
+   "url_cloudinary": "https://extranet.bwfbadminton.com/images/player-hero-02.jpg",
+   "url_cloudinary_large": "https://extranet.bwfbadminton.com/images/player-hero-02.jpg",
+   "url_cloudinary_mobile": "https://extranet.bwfbadminton.com/images/player-hero-mobile-02.jpg"
+  },
+  "country_model": null,
+  "bio_model": null
+ },
+ "drawCount": 1
+}

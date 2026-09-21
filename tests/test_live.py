@@ -45,3 +45,20 @@ def test_live_reversed_name_and_common_word(client: BwfHttpClient) -> None:
     result = search_player("Tai Tzu Ying", client)
     assert result.status == "found"
     assert result.best_match.player_id == "61427"
+
+
+def test_live_profile_right_and_left_handed(client: BwfHttpClient) -> None:
+    from bwf_player.profile import get_profile
+
+    christie = get_profile("73442", client)
+    assert (christie.nationality, christie.height_cm, christie.playing_hand) == ("Indonesia", 179.0, "Right")
+    marin = get_profile("18228", client)
+    assert (marin.nationality, marin.height_cm, marin.playing_hand) == ("Spain", 172.0, "Left")
+
+
+def test_live_profile_with_unlisted_details_and_unknown_id(client: BwfHttpClient) -> None:
+    from bwf_player.profile import get_profile
+
+    sparse = get_profile("89438", client)
+    assert sparse.player_found and sparse.missing_fields == ["nationality", "height", "playing_hand"]
+    assert get_profile("999999999", client).player_found is False

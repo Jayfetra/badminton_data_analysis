@@ -1,0 +1,178 @@
+Test results - 2026-09-21 15:06:57 SE Asia Standard Time
+Python 3.14.2 on Windows-11-10.0.26200-SP0
+Base commit: c6129ee (+ uncommitted changes from the current iteration)
+
+SUMMARY
+OFFLINE TESTS          131 passed, 6 deselected in 0.40s
+LIVE SMOKE TESTS       6 passed, 131 deselected in 22.82s
+
+==============================================================================
+OFFLINE TESTS (default suite)
+$ pytest -v
+exit code: 0
+==============================================================================
+============================= test session starts =============================
+platform win32 -- Python 3.14.2, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\badminton_data_analysis\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\badminton_data_analysis
+configfile: pyproject.toml
+testpaths: tests
+collecting ... collected 137 items / 6 deselected / 131 selected
+
+tests/test_http_client.py::test_bootstraps_once_then_calls_api_with_headers PASSED [  0%]
+tests/test_http_client.py::test_cache_hit_makes_no_network_request PASSED [  1%]
+tests/test_http_client.py::test_cache_expires_after_ttl PASSED           [  2%]
+tests/test_http_client.py::test_zero_ttl_disables_cache PASSED           [  3%]
+tests/test_http_client.py::test_corrupt_cache_file_is_ignored PASSED     [  3%]
+tests/test_http_client.py::test_rate_limit_spaces_network_requests PASSED [  4%]
+tests/test_http_client.py::test_transient_errors_are_retried_with_backoff PASSED [  5%]
+tests/test_http_client.py::test_retry_after_header_is_respected PASSED   [  6%]
+tests/test_http_client.py::test_gives_up_after_max_retries PASSED        [  6%]
+tests/test_http_client.py::test_cloudflare_block_is_not_retried PASSED   [  7%]
+tests/test_http_client.py::test_block_during_bootstrap_is_detected PASSED [  8%]
+tests/test_http_client.py::test_plain_403_is_a_client_error_not_a_block PASSED [  9%]
+tests/test_http_client.py::test_non_json_response_raises PASSED          [  9%]
+tests/test_http_client.py::test_params_are_passed_separately_never_in_url PASSED [ 10%]
+tests/test_names.py::test_normalize_name[Jonatan CHRISTIE-jonatan christie] PASSED [ 11%]
+tests/test_names.py::test_normalize_name[  Adrian   CAPELL\xc1N -adrian capellan] PASSED [ 12%]
+tests/test_names.py::test_normalize_name[Alexander RINGB\xc6K-alexander ringbaek] PASSED [ 12%]
+tests/test_names.py::test_normalize_name[O'Brien-Smith-o brien smith] PASSED [ 13%]
+tests/test_names.py::test_normalize_name[\u0141ukasz \u0110or\u0111e-lukasz dorde] PASSED [ 14%]
+tests/test_names.py::test_derive_slug PASSED                             [ 15%]
+tests/test_names.py::test_sanitize_strips_control_chars_and_whitespace PASSED [ 16%]
+tests/test_names.py::test_sanitize_rejects_bad_input[] PASSED            [ 16%]
+tests/test_names.py::test_sanitize_rejects_bad_input[   ] PASSED         [ 17%]
+tests/test_names.py::test_sanitize_rejects_bad_input[!!!] PASSED         [ 18%]
+tests/test_names.py::test_sanitize_rejects_bad_input[None] PASSED        [ 19%]
+tests/test_names.py::test_sanitize_rejects_bad_input[5] PASSED           [ 19%]
+tests/test_names.py::test_sanitize_rejects_bad_input[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx] PASSED [ 20%]
+tests/test_profile.py::test_right_handed_player PASSED                   [ 21%]
+tests/test_profile.py::test_left_handed_player PASSED                    [ 22%]
+tests/test_profile.py::test_player_with_no_details_returns_nulls_and_notes_not_an_error PASSED [ 22%]
+tests/test_profile.py::test_unknown_player_id PASSED                     [ 23%]
+tests/test_profile.py::test_one_request_with_only_validated_params PASSED [ 24%]
+tests/test_profile.py::test_accepted_id_forms_are_normalised[73442_0] PASSED [ 25%]
+tests/test_profile.py::test_accepted_id_forms_are_normalised[73442_1] PASSED [ 25%]
+tests/test_profile.py::test_accepted_id_forms_are_normalised[ 73442 ] PASSED [ 26%]
+tests/test_profile.py::test_accepted_id_forms_are_normalised[0073442] PASSED [ 27%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[abc] PASSED [ 28%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[] PASSED [ 29%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[  ] PASSED [ 29%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[12a] PASSED [ 30%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[-1] PASSED [ 31%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[1 2] PASSED [ 32%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[1.5_0] PASSED [ 32%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[0_0] PASSED [ 33%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[0_1] PASSED [ 34%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[None] PASSED [ 35%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[True] PASSED [ 35%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[1.5_1] PASSED [ 36%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[12345678901] PASSED [ 37%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[\u0663\u0664] PASSED [ 38%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[73442&isPara=true] PASSED [ 38%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[../1] PASSED [ 39%]
+tests/test_profile.py::test_malformed_ids_are_rejected_before_any_request[1;DROP TABLE] PASSED [ 40%]
+tests/test_profile.py::test_response_for_a_different_player_is_rejected PASSED [ 41%]
+tests/test_profile.py::test_malformed_payloads_raise_client_error[None] PASSED [ 41%]
+tests/test_profile.py::test_malformed_payloads_raise_client_error[payload1] PASSED [ 42%]
+tests/test_profile.py::test_malformed_payloads_raise_client_error[text] PASSED [ 43%]
+tests/test_profile.py::test_malformed_payloads_raise_client_error[payload3] PASSED [ 44%]
+tests/test_profile.py::test_malformed_payloads_raise_client_error[payload4] PASSED [ 45%]
+tests/test_profile.py::test_malformed_payloads_raise_client_error[payload5] PASSED [ 45%]
+tests/test_profile.py::test_malformed_payloads_raise_client_error[payload6] PASSED [ 46%]
+tests/test_profile.py::test_empty_list_results_means_player_not_found PASSED [ 47%]
+tests/test_profile.py::test_height_formats[179.00-179.0] PASSED          [ 48%]
+tests/test_profile.py::test_height_formats[179-179.0_0] PASSED           [ 48%]
+tests/test_profile.py::test_height_formats[179-179.0_1] PASSED           [ 49%]
+tests/test_profile.py::test_height_formats[178.5-178.5] PASSED           [ 50%]
+tests/test_profile.py::test_height_formats[ 180 -180.0] PASSED           [ 51%]
+tests/test_profile.py::test_unusable_height_becomes_null_with_a_note[abc] PASSED [ 51%]
+tests/test_profile.py::test_unusable_height_becomes_null_with_a_note[0.00] PASSED [ 52%]
+tests/test_profile.py::test_unusable_height_becomes_null_with_a_note[-5] PASSED [ 53%]
+tests/test_profile.py::test_unusable_height_becomes_null_with_a_note[301] PASSED [ 54%]
+tests/test_profile.py::test_unusable_height_becomes_null_with_a_note[nan] PASSED [ 54%]
+tests/test_profile.py::test_unusable_height_becomes_null_with_a_note[inf] PASSED [ 55%]
+tests/test_profile.py::test_unusable_height_becomes_null_with_a_note[1e999] PASSED [ 56%]
+tests/test_profile.py::test_unusable_height_becomes_null_with_a_note[True] PASSED [ 57%]
+tests/test_profile.py::test_unusable_height_becomes_null_with_a_note[raw8] PASSED [ 58%]
+tests/test_profile.py::test_unusable_height_becomes_null_with_a_note[raw9] PASSED [ 58%]
+tests/test_profile.py::test_absent_height_is_a_plain_missing_field[None] PASSED [ 59%]
+tests/test_profile.py::test_absent_height_is_a_plain_missing_field[] PASSED [ 60%]
+tests/test_profile.py::test_hand_mapping[1-Right0] PASSED                [ 61%]
+tests/test_profile.py::test_hand_mapping[1-Right1] PASSED                [ 61%]
+tests/test_profile.py::test_hand_mapping[2-Left0] PASSED                 [ 62%]
+tests/test_profile.py::test_hand_mapping[2-Left1] PASSED                 [ 63%]
+tests/test_profile.py::test_unmapped_hand_value_is_null_with_a_note[0_0] PASSED [ 64%]
+tests/test_profile.py::test_unmapped_hand_value_is_null_with_a_note[0_1] PASSED [ 64%]
+tests/test_profile.py::test_unmapped_hand_value_is_null_with_a_note[3] PASSED [ 65%]
+tests/test_profile.py::test_unmapped_hand_value_is_null_with_a_note[R] PASSED [ 66%]
+tests/test_profile.py::test_unmapped_hand_value_is_null_with_a_note[left] PASSED [ 67%]
+tests/test_profile.py::test_unmapped_hand_value_is_null_with_a_note[raw5] PASSED [ 67%]
+tests/test_profile.py::test_unmapped_hand_value_is_null_with_a_note[-1] PASSED [ 68%]
+tests/test_profile.py::test_missing_country_falls_back_to_code_with_a_note PASSED [ 69%]
+tests/test_profile.py::test_no_country_and_no_code_is_missing PASSED     [ 70%]
+tests/test_profile.py::test_missing_bio_model_only_affects_height_and_hand PASSED [ 70%]
+tests/test_profile.py::test_cloudflare_block_propagates PASSED           [ 71%]
+tests/test_scaffold.py::test_package_imports PASSED                      [ 72%]
+tests/test_scaffold.py::test_config_defaults_are_conservative PASSED     [ 73%]
+tests/test_scaffold.py::test_config_rejects_invalid_threshold PASSED     [ 74%]
+tests/test_scaffold.py::test_not_found_result_needs_no_match PASSED      [ 74%]
+tests/test_scaffold.py::test_candidate_score_bounds PASSED               [ 75%]
+tests/test_scaffold.py::test_unranked_ranking_defaults PASSED            [ 76%]
+tests/test_search.py::test_exact_match_uses_only_the_index PASSED        [ 77%]
+tests/test_search.py::test_variants_resolve_to_same_player[jonatan christie] PASSED [ 77%]
+tests/test_search.py::test_variants_resolve_to_same_player[  Jonatan    Christie  ] PASSED [ 78%]
+tests/test_search.py::test_variants_resolve_to_same_player[JONATAN CHRISTIE] PASSED [ 79%]
+tests/test_search.py::test_variants_resolve_to_same_player[Christie Jonatan] PASSED [ 80%]
+tests/test_search.py::test_variants_resolve_to_same_player[jonathan cristie] PASSED [ 80%]
+tests/test_search.py::test_variants_resolve_to_same_player[J\xf3natan Christi\xe9] PASSED [ 81%]
+tests/test_search.py::test_variants_resolve_to_same_player[jonatan-christie] PASSED [ 82%]
+tests/test_search.py::test_reversed_order_needs_no_server_request PASSED [ 83%]
+tests/test_search.py::test_typo_inside_a_single_word_partial_name_is_not_matched PASSED [ 83%]
+tests/test_search.py::test_accented_name_in_index PASSED                 [ 84%]
+tests/test_search.py::test_partial_name_is_ambiguous_and_ranked PASSED   [ 85%]
+tests/test_search.py::test_player_missing_from_index_is_found_via_server_search PASSED [ 86%]
+tests/test_search.py::test_reversed_name_uses_real_slug_from_server PASSED [ 87%]
+tests/test_search.py::test_not_found_returns_result_not_exception PASSED [ 87%]
+tests/test_search.py::test_empty_or_non_text_input[] PASSED              [ 88%]
+tests/test_search.py::test_empty_or_non_text_input[   ] PASSED           [ 89%]
+tests/test_search.py::test_empty_or_non_text_input[\t\n] PASSED          [ 90%]
+tests/test_search.py::test_empty_or_non_text_input[None] PASSED          [ 90%]
+tests/test_search.py::test_empty_or_non_text_input[123] PASSED           [ 91%]
+tests/test_search.py::test_special_characters_never_raise_and_are_not_forwarded_raw['; DROP TABLE players; --] PASSED [ 92%]
+tests/test_search.py::test_special_characters_never_raise_and_are_not_forwarded_raw[<script>alert(1)</script>] PASSED [ 93%]
+tests/test_search.py::test_special_characters_never_raise_and_are_not_forwarded_raw[%00%0d%0aHeader: x] PASSED [ 93%]
+tests/test_search.py::test_special_characters_never_raise_and_are_not_forwarded_raw[../../etc/passwd] PASSED [ 94%]
+tests/test_search.py::test_special_characters_never_raise_and_are_not_forwarded_raw[Jonatan\x00 Christie\x07] PASSED [ 95%]
+tests/test_search.py::test_special_characters_never_raise_and_are_not_forwarded_raw[!!! ???] PASSED [ 96%]
+tests/test_search.py::test_control_characters_are_stripped PASSED        [ 96%]
+tests/test_search.py::test_overlong_query_is_rejected PASSED             [ 97%]
+tests/test_search.py::test_threshold_is_configurable PASSED              [ 98%]
+tests/test_search.py::test_cloudflare_block_propagates PASSED            [ 99%]
+tests/test_search.py::test_server_queries_are_contiguous_phrases_longest_first PASSED [100%]
+
+====================== 131 passed, 6 deselected in 0.40s ======================
+
+
+==============================================================================
+LIVE SMOKE TESTS (real requests)
+$ pytest -v -m live
+exit code: 0
+==============================================================================
+============================= test session starts =============================
+platform win32 -- Python 3.14.2, pytest-9.1.1, pluggy-1.6.0 -- D:\Project\badminton_data_analysis\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Project\badminton_data_analysis
+configfile: pyproject.toml
+testpaths: tests
+collecting ... collected 137 items / 131 deselected / 6 selected
+
+tests/test_live.py::test_live_exact_name PASSED                          [ 16%]
+tests/test_live.py::test_live_typo_and_reversed_order PASSED             [ 33%]
+tests/test_live.py::test_live_player_missing_from_index PASSED           [ 50%]
+tests/test_live.py::test_live_reversed_name_and_common_word PASSED       [ 66%]
+tests/test_live.py::test_live_profile_right_and_left_handed PASSED       [ 83%]
+tests/test_live.py::test_live_profile_with_unlisted_details_and_unknown_id PASSED [100%]
+
+===================== 6 passed, 131 deselected in 22.82s ======================
+

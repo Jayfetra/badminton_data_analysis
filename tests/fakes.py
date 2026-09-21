@@ -10,6 +10,12 @@ from bwf_player.config import BwfConfig
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
+_SUMMARY_FIXTURES = {
+    "73442": "summary_christie.json",
+    "18228": "summary_marin.json",
+    "89438": "summary_no_details.json",
+}
+
 
 def load_fixture(name: str) -> Any:
     return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
@@ -47,6 +53,9 @@ class FakeApiClient:
             chunk = matches[(page - 1) * size : page * size]
             more = len(matches) > page * size
             return {"results": chunk, "pagination": {"next_page_url": "next" if more else None}}
+        if endpoint == "vue-player-summary":
+            fixture = _SUMMARY_FIXTURES.get(str(params.get("playerId")), "summary_unknown_player.json")
+            return load_fixture(fixture)
         raise AssertionError(f"unexpected endpoint {endpoint}")
 
     def calls_to(self, endpoint: str) -> list[dict[str, Any]]:

@@ -1,5 +1,26 @@
 # PRD Changelog
 
+## Iteration 2 — 2026-09-21 (R2: personal details)
+
+**What changed**
+- Implemented `profile.get_profile(player_id)` (+ pure `parse_profile`) returning nationality, height and playing hand, one request per player to `vue-player-summary`.
+- Earlier-iteration code touched: `models.PlayerProfile` (an Iteration 0 stub model, unused until now): `height: str` became `height_cm: float`; added `player_found` and `notes`. `tests/fakes.py` gained a `vue-player-summary` fake. No search/HTTP-client behaviour changed.
+- Added `scripts/save_test_results.py` and `test_results/latest.txt` (user request: save the latest test results every iteration).
+- Notebook: added a profile cell after the search cell. README: usage and test-results instructions.
+
+**Why**
+- Inspecting the real responses showed the site's profile header renders all three fields from `vue-player-summary` (nationality from `country_model.name`, height and hand from `bio_model`), so one request suffices. `vue-player-bio` has height and hand but no nationality, so it was not needed. The site's own template defines hand as `plays` 1 = right, 2 = left, anything else "n/a", so that mapping is not a guess.
+- The API answers a **malformed id (`abc`) with an unrelated player** (found by probing). Ids are therefore validated as positive integers before any request, and the returned `id` must equal the requested one.
+
+**What was tested**
+- Offline: 131 tests in total (67 new for R2): right- and left-handed players from real fixtures, a real player with nothing listed (all null + notes, request still succeeds), unknown id (`player_found=False`), id validation (17 malformed forms, no request made), response for a different player rejected, malformed payloads, height formats and unusable values (abc, 0, negative, >300, nan, inf, bool, list), unmapped hand values, missing country (falls back to ISO code), missing `bio_model`, Cloudflare block propagates.
+- Live: 6 tests passed in total (2 new): Christie (Indonesia, 179 cm, Right), Marin (Spain, 172 cm, Left), Aadhya Shine (nothing listed), unknown id. Notebook cells executed end to end for four sample queries.
+- Full output: `test_results/latest.txt`.
+
+**Decisions**
+- `height_cm` is a float in centimetres (the site stores `"179.00"`); implausible values (<= 0 or > 300) are treated as unusable.
+- Nationality is the country name; the ISO code is used only as a fallback, with a note.
+
 ## Iteration 1 — 2026-09-21 (R1: player search)
 
 **What changed**
