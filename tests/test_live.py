@@ -154,3 +154,26 @@ def test_live_matches_of_a_doubles_player_have_partners(client: BwfHttpClient) -
             assert match.partner is not None and match.partner.player_id != 88876
             if match.status == "played":
                 assert len(match.opponents) == 2 and match.games
+
+
+def test_live_store_and_export_reproduce_the_sites_totals(client: BwfHttpClient, tmp_path: Path) -> None:
+    import csv
+
+    from bwf_player import get_matches, get_tournaments
+    from bwf_player.store import HistoryStore
+
+    history = get_tournaments("73442", client, with_categories=False)
+    history.entries = history.entries[-3:]  # the same three events the other live tests already fetched
+    with HistoryStore(tmp_path / "live.sqlite") as store:
+        store.save_tournaments(history, player_name="Jonatan CHRISTIE")
+        for entry in history.entries:
+            store.save_matches(get_matches("73442", entry, client))
+        counts = store.counts()
+        expected = sum(e.matches_won + e.matches_lost for e in history.entries)
+        assert counts["results"] == 3 and counts["matches"] == expected
+        assert len(store.connection.execute("SELECT 1 FROM player_match_view").fetchall()) == expected
+        wins = store.connection.execute("SELECT COUNT(*) FROM player_match_view WHERE won = 1").fetchone()[0]
+        assert wins + store.connection.execute("SELECT COUNT(*) FROM player_match_view WHERE won = 0").fetchone()[0] == expected
+        files = store.export_csv(tmp_path / "csv")
+    with files["matches.csv"].open(encoding="utf-8-sig", newline="") as handle:
+        assert len(list(csv.DictReader(handle))) == expected

@@ -1,6 +1,6 @@
 # PRD Master — BWF Player Lookup
 
-**Version:** 1.2 (Iteration 6: matches, partners, opponents, game scores, R5-R6) · **Last updated:** 2026-09-21
+**Version:** 1.3 (Iteration 7: SQLite storage and CSV export, R7) · **Last updated:** 2026-09-21
 
 Single source of truth for requirements, architecture decisions, data schema and open questions.
 
@@ -16,7 +16,7 @@ Given a badminton player's name, retrieve profile and ranking data from bwfbadmi
 | R4 | Match history (section 10, added 2026-09-21): the tournaments one player entered in the last year, with the result per event. **Done (Iteration 5).** |
 | R5 | For each match: the player's partner and the opponent(s). **Done (Iteration 6).** |
 | R6 | For each match: round, date, outcome, status and the points of every game. **Done (Iteration 6).** |
-| R7 | Save everything to SQLite (re-runnable) and export CSV. Planned (Iteration 7). |
+| R7 | Save everything to SQLite (re-runnable) and export CSV. **Done (Iteration 7).** |
 
 Out of scope: anything not listed above.
 
@@ -81,6 +81,7 @@ bwf_player/
   tournaments.py  R4: history_window, get_tournaments (tournaments and results in a date window) (Iteration 5)
   matches.py      R5/R6: get_matches (partner, opponents, per-game scores of one event), check_totals (Iteration 6)
   parsing.py      to_int, to_date, clean_text: defensive coercion shared by the parsers
+  store.py        R7: HistoryStore (SQLite tables, player_match_view, CSV export) (Iteration 7)
 notebook.ipynb    thin interface over the package; committed with its executed outputs
 tests/            pytest; offline unit tests on saved fixtures; @pytest.mark.live smoke tests
 scripts/          save_test_results.py (both suites -> test_results/latest.txt), execute_notebook.py (runs notebook.ipynb, saves outputs)
@@ -130,6 +131,12 @@ test_results/     latest.txt: full output of the most recent test run (overwritt
   - *Date*: the local date from `match_start_time_details`, else `match_time`.
   - *Reconciliation* (`check_totals`): matches won/lost, games won/lost and points for/against, as computed from the parsed matches, must equal the totals the tournament list gives for the event. **The site counts a bye as a match won**, so byes are added to the wins for this comparison. A difference sets `totals_agree=False` and is listed in the notes; an entry without totals gives None.
   - *Robustness*: malformed payloads raise `BwfClientError`; an unreadable draw or match is skipped and counted; the same match id in two draws is kept once; names have whitespace collapsed (the site has double spaces, e.g. "Mohamed  Abderrahime BELARBI").
+- **Storage (R7, implemented in Iteration 7).** `store.HistoryStore(path=":memory:")` (a context manager) with `save_tournaments(history, *, player_name, player_country)`, `save_matches(event_matches)`, `export_csv(directory)`, `counts()` and `connection` for read queries. Data model: section 10.
+  - *Re-runnable*: every table is keyed by the site's ids and written with an upsert, so a second download of the same player changes nothing (tested by comparing complete table dumps). A corrected match replaces its players and games, so no stale rows survive; the same match saved from the opponent's point of view is identical.
+  - *Atomic*: each `save_*` call is one transaction; a failure part-way leaves the database as it was (tested with an injected failure).
+  - *Order of saving*: tournaments first; `save_matches` for a tournament that is not stored raises `InvalidInputError` and stores nothing. A participant the site gives no id cannot be stored and is skipped with a log warning.
+  - *Safety*: every value goes in through bound parameters (a tournament called `O'Brien Open"; DROP TABLE players; --` is stored literally); foreign keys are on; a file that is not a database, a path that cannot be created and a newer schema version each raise `BwfClientError`.
+  - *Config*: `BwfConfig.history_db_path` (`data/bwf_history.sqlite`) and `history_export_dir` (`data/export`) hold the defaults; `data/` is git-ignored. They are read by the end-to-end function in Iteration 8.
 - **Input safety.** Names are sanitized as above and passed to the API only via `requests` `params` (encoded), never string-concatenated into URLs. Server queries use only the normalized (alphanumeric) tokens. Player ids/slugs are URL-quoted when building profile URLs.
 - **No secrets** are used or stored. The session cookie is fetched at runtime and kept in memory.
 
@@ -154,7 +161,7 @@ BWF raw field names for bio/ranking are unconfirmed; models are the package's ow
 
 ## 6. Testing strategy
 
-pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live smoke tests are marked `@pytest.mark.live` and excluded by default (`pytest -m live` to run). `python scripts/save_test_results.py` runs both suites and saves the full output to `test_results/latest.txt` (overwritten every iteration; `--no-live` skips the live suite). Required edge cases: exact, fuzzy, ambiguous, not found, empty input, special characters, missing fields, unranked player. Iteration 5 adds `tests/test_tournaments.py` and two live tests; Iteration 6 adds `tests/test_matches.py` (real fixtures for singles, doubles, mixed, team events, group stage, qualification, retirement, walkover and bye) and two live tests. `tests/test_notebook.py` guards the committed notebook: valid, every code cell executed without errors, only uses the package, shows the main result, contains no secrets or local paths.
+pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live smoke tests are marked `@pytest.mark.live` and excluded by default (`pytest -m live` to run). `python scripts/save_test_results.py` runs both suites and saves the full output to `test_results/latest.txt` (overwritten every iteration; `--no-live` skips the live suite). Required edge cases: exact, fuzzy, ambiguous, not found, empty input, special characters, missing fields, unranked player. Iteration 5 adds `tests/test_tournaments.py` and two live tests; Iteration 6 adds `tests/test_matches.py` (real fixtures for singles, doubles, mixed, team events, group stage, qualification, retirement, walkover and bye) and two live tests; Iteration 7 adds `tests/test_store.py` (database, view and CSV on real fixtures) and one live test. `tests/test_notebook.py` guards the committed notebook: valid, every code cell executed without errors, only uses the package, shows the main result, contains no secrets or local paths.
 
 ## 7. Iteration plan
 
@@ -167,7 +174,7 @@ pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live sm
 | 4 | Notebook, README, full regression | Done |
 | 5 | R4: tournaments in a one-year window and the result per event | Done |
 | 6 | R5 + R6: partners, opponents, per-game scores; reconciliation with the R4 totals | Done |
-| 7 | R7: SQLite storage (re-runnable) and CSV export | Planned |
+| 7 | R7: SQLite storage (re-runnable) and CSV export | Done |
 | 8 | End-to-end `download_player_history`, notebook, README, full regression | Planned |
 
 ## 8. Open questions
@@ -214,17 +221,21 @@ Player-centric, using the endpoints the site's own player "Tournaments" tab uses
 
 **Built-in cross-check.** Every event in the tournament list carries the site's own totals (`match_win/lose`, `game_win/lose`, points). The parsed matches must add up to them (`check_totals`); a mismatch is reported, so the parser is validated on live data rather than trusted. During Iteration 6 this held for 72 real events (215 matches) of five players; 29 of those events are saved as fixtures and re-checked by every offline run.
 
-### Planned data model (SQLite, `data/bwf_history.sqlite`, git-ignored; implemented in Iteration 7)
+### Data model (SQLite, `data/bwf_history.sqlite`, git-ignored; implemented in Iteration 7)
 
-- `players(player_id PK, name, slug, country)`: the subject, partners and opponents
-- `tournaments(tournament_id PK, name, category, start_date, end_date, location, country, type_id)`
-- `results(player_id, tournament_id, event_code, event_id, position, matches_won, matches_lost, games_won, games_lost, points_for, points_against)`, PK (player, tournament, event)
-- `matches(match_id PK, tournament_id, event_code, draw_name, round, match_date, duration_min, status, winner_side)`; `status` is one of played, bye, walkover, retired, disqualified, unknown
-- `match_players(match_id, player_id, side 1|2, slot 1|2)`: who is on which side, so it answers "played with" and "played against"
-- `games(match_id, game_no, side1_points, side2_points)`
-- View `player_match_view`: from the subject's side, `partner`, `opponent_1`, `opponent_2`, `games` ("21-17, 21-19"), `won`
-- CSV export: `results.csv`, `matches.csv` (one row per match), `games.csv` (one row per game)
+Everything is keyed by the site's own ids, so saving the same data again replaces it instead of duplicating it. `PRAGMA user_version` holds the schema version (1); a database from a newer version is refused.
+
+- `players(player_id PK, name, country)`: the subject, partners and opponents. A later save that lacks a name or country never blanks the stored one.
+- `tournaments(tournament_id PK, name, category, start_date, end_date, location, country, type_id, url)`. A later save without a category keeps the stored one.
+- `results(player_id, tournament_id, event_id, event_code, position, matches_won, matches_lost, games_won, games_lost, points_for, points_against)`, PK (player, tournament, event). `event_id` 0 means the site lists no event for that tournament.
+- `matches(match_id PK, tournament_id, event_id, event_code, seq, draw_id, draw_name, round, match_date, duration_min, status, winner_side)`. `status` is one of played, bye, walkover, retired, disqualified, unknown. `winner_side` is 1 or 2, NULL for a bye or an unknown winner. `seq` is the match's position within its event, in playing order.
+- `match_players(match_id, player_id, side 1|2)`: who was on which side. Partners are on the subject's side, opponents on the other, so "played with" and "played against" are the same side / other side question.
+- `games(match_id, game_no, side1_points, side2_points)`: the site's own orientation (side 1 first), so a match stored from either player's point of view is identical.
+- View `player_match_view`: one row per (subject, match) with `partner_id`, `partner`, `opponent_1`, `opponent_2`, `games` ("21-17, 21-19", the subject's points first), `won` (1, 0 or NULL) plus tournament, category, event, round and date. A subject is a player with a result in that tournament, so opponents do not appear as subjects unless they were downloaded too.
+- CSV export (`HistoryStore.export_csv`): `results.csv` (one row per event entered), `matches.csv` (one row per subject and match, from the view) and `games.csv` (one row per game, subject's points first). UTF-8 with a byte-order mark so Excel shows accents; empty values are blank.
+
+Differences from the model planned on 2026-09-21: the `slot` column was dropped (the position of a player within a side has no analytical use); `seq` was added (matches need an order within their event); `players.slug` was dropped (the match responses carry no slug that is needed); `winner_side` is nullable (byes); `event_id` 0 stands for "no event" so it can be part of the primary key.
 
 ### Status
 
-R4 (Iteration 5) and R5-R6 (Iteration 6) are implemented and tested (`bwf_player/tournaments.py`, `bwf_player/matches.py`, section 4). R7 (storage) and the end-to-end download follow in Iterations 7-8 (section 7).
+R4 (Iteration 5), R5-R6 (Iteration 6) and R7 (Iteration 7) are implemented and tested (`bwf_player/tournaments.py`, `bwf_player/matches.py`, section 4). R7 (Iteration 7, `bwf_player/store.py`) is implemented too. The end-to-end `download_player_history`, the notebook and the final regression follow in Iteration 8 (section 7).

@@ -25,6 +25,9 @@ class BwfConfig(BaseModel):
     cache_ttl_seconds: int = Field(default=24 * 3600, ge=0)
     index_cache_ttl_seconds: int = Field(default=7 * 24 * 3600, ge=0)
 
+    history_db_path: Path = Path("data/bwf_history.sqlite")
+    history_export_dir: Path = Path("data/export")
+
     match_threshold: float = Field(default=85.0, ge=0, le=100)
     ambiguity_margin: float = Field(default=5.0, ge=0, le=100)
     max_candidates: int = Field(default=5, ge=1)

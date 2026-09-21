@@ -1,5 +1,27 @@
 # PRD Changelog
 
+## Iteration 7 — 2026-09-21 (R7: SQLite storage and CSV export)
+
+**What changed**
+- Added `bwf_player/store.py`: `HistoryStore` with `save_tournaments`, `save_matches`, `export_csv`, `counts`, and the view `player_match_view` (one row per subject and match: partner, opponents, games as "21-17, 21-19", won). Tables: `players`, `tournaments`, `results`, `matches`, `match_players`, `games`.
+- `BwfConfig`: added `history_db_path` and `history_export_dir` (defaults under `data/`); `.gitignore`: `data/`. Earlier-iteration code touched: only these additions and `tests/test_live.py`; no behaviour of R1-R6 changed.
+- PRD_master: version 1.3, section 10 data model rewritten as implemented, storage design notes, iteration table.
+- CSV export: `results.csv`, `matches.csv`, `games.csv` (UTF-8 with a byte-order mark, so Excel shows accents; empty values blank).
+
+**Why**
+- The user asked for the downloaded data to be saved in SQLite plus a CSV export. Keeping the site's own ids as keys and using upserts makes a repeated download harmless, and storing games in the site's own side orientation makes a match identical whichever player it was downloaded for.
+
+**Decisions and corrections to the plan**
+- The planned model had `match_players.slot` and `players.slug`; both dropped (no analytical use, no data). `matches.seq` was added because a match needs an order within its event. `winner_side` is nullable because a bye has no winner. `event_id` 0 means "the site lists no event" so it can be part of the primary key.
+
+**What was tested (`test_results/latest.txt`)**
+- Offline: **508 passed** (467 before; 41 new in `tests/test_store.py`): new database (tables, view, schema version, foreign keys on), file and folders created, data survives reopening, newer schema / non-database file / uncreatable path refused; Christie's whole year saved (19 tournaments, 19 results, 58 matches, 116 participants, 138 games) and a result, tournament and player row compared exactly; games stored in the site's side orientation for a side-1 and a side-2 match; the view for singles, doubles (partner, two opponents), team-event partners changing per tie, two events at one tournament, bye, walkover and retirement; **saving twice changes nothing** (full table dumps compared); a corrected match replaces its games and players; the same match saved from the opponent's view is unchanged; a later save without category/name does not erase them; matches of an unsaved tournament refused; **a failed save leaves nothing behind** (injected failure); a player without an id skipped with a warning; awkward text (quotes, SQL, accents) stored literally; foreign keys enforced; CSV files (columns, order, values, BOM, accents, replaced on re-export, header-only when empty).
+- Live: **14 passed** (1 new): the three most recent real Christie events saved and exported; results, matches and view rows equal the site's totals.
+
+**Findings**
+- SQLite correlated subqueries (partner, opponents, ordered game text) work inside the view on the Python-bundled SQLite; no SQL beyond what the standard library provides is needed.
+- The view lists only subjects (players with a result in the tournament). Opponents appear in `players` and `match_players`, but only appear as view rows if they were downloaded too.
+
 ## Iteration 6 — 2026-09-21 (R5 + R6: matches, partners, opponents, game scores)
 
 **What changed**

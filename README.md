@@ -8,7 +8,8 @@ Type a badminton player's name and get their personal details and ranking from [
 | **Personal details** | Nationality, height (cm), playing hand (Right/Left). |
 | **Ranking** | Current rank and how many consecutive weeks the player has held it (plus since when). |
 | **Tournaments (new, in progress)** | Every tournament the player entered in the last year, with the result per event (`1st`, `QF`, ...), the record and the category. |
-| **Matches (new, in progress)** | For each event: every match with the partner, the opponents, the round, the date and the points of every game. Saving to SQLite/CSV and the one-call download come next. |
+| **Matches (new, in progress)** | For each event: every match with the partner, the opponents, the round, the date and the points of every game. |
+| **Storage (new, in progress)** | Saved to a SQLite database (re-runnable) and exported as CSV. The one-call download comes next. |
 
 A value the site does not list is `null`, with a note explaining it. A missing field never fails the whole request.
 
@@ -60,7 +61,7 @@ get_ranking(pid)                                 # current_rank, weeks_at_curren
 get_ranking(pid, event_id="9-90070")             # a different ranking event (ids are listed in other_events)
 ```
 
-**Tournaments and matches in the last year** (Iterations 5-6; SQLite/CSV storage and a one-call download follow):
+**Tournaments, matches and storage for the last year** (Iterations 5-7; a one-call download follows):
 
 ```python
 from bwf_player import get_tournaments
@@ -78,7 +79,19 @@ for m in event.matches:
 # R32 won None ['LEONG Jun Hao'] 21-17, 21-19
 # R16 lost None ['Jason GUNAWAN'] 16-21, 16-21
 event.totals_agree                                # True: the matches add up to the site's own totals
+
+from bwf_player.store import HistoryStore
+with HistoryStore("data/bwf_history.sqlite") as store:         # re-running never duplicates anything
+    store.save_tournaments(history, player_name="Jonatan CHRISTIE")
+    for entry in history.entries:
+        store.save_matches(get_matches(pid, entry))
+    store.export_csv("data/export")                          # results.csv, matches.csv, games.csv
+    rows = store.connection.execute(
+        "SELECT round, partner, opponent_1, opponent_2, games, won FROM player_match_view "
+        "WHERE tournament_id = 5625 ORDER BY seq").fetchall()   # or pandas.read_sql(..., store.connection)
 ```
+
+The database has `players`, `tournaments`, `results`, `matches`, `match_players` and `games` tables plus the view `player_match_view` (one row per player and match). Table details: PRD section 10.
 
 `position` is the site's own label (`null` for team events, which have none). A tournament counts if its dates overlap the window. `get_tournaments(pid, since=date(...), until=date(...))` sets another window. The default window costs two requests plus one to four for the categories.
 
@@ -91,7 +104,7 @@ The site is a JavaScript app that loads its data from a JSON API, so the tool ca
 ## Project layout
 
 ```
-bwf_player/      the package: http_client, names, search, profile, ranking, lookup, tournaments, matches, parsing, models, config
+bwf_player/      the package: http_client, names, search, profile, ranking, lookup, tournaments, matches, store, parsing, models, config
 notebook.ipynb   thin interface over the package (committed with its outputs)
 tests/           pytest; offline tests use saved real API responses in tests/fixtures/
 scripts/         save_test_results.py, execute_notebook.py
@@ -115,6 +128,7 @@ python scripts/execute_notebook.py    # re-run the notebook and save its outputs
 - **Search limits.** A typo inside a one-word query ("cristie") is not matched. A typo'd name for a player missing from the site's player list (e.g. Kento Momota) is not found. A reversed name for such a player, when its words are common, may fail ("Dan Lin" does not find "LIN Dan"). Details and workarounds: PRD section 8.
 - **Ranking events.** The result reports the first event the site lists (usually singles); others are in `other_events`.
 - **Tournament history.** Para tournaments are not covered; the category is `null` for tournaments the site's calendar gives none (62 of the 326 in the last year's calendar; none for Christie's). A bye is returned as its own status (`bye`, no result); filter `status == "played"` for matches that were really played. Disqualifications and matches still in progress are handled defensively but were not present in the real data used for testing.
+- **Stored data.** `data/` (database and CSV) is git-ignored. The database keeps everything you have saved; saving again updates rows but never deletes any, so a match the site later removes stays in the file. The view `player_match_view` lists only players whose own history you downloaded.
 - **Unknown id vs never ranked.** The site answers both the same way, so both come back as "no ranking events".
 
 ## Documentation

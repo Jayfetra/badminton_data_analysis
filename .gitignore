@@ -27,6 +27,9 @@ env/
 .cache/
 bwf_cache/
 
+# Downloaded match history (SQLite database and CSV export)
+data/
+
 # OS / editor
 .DS_Store
 Thumbs.db
