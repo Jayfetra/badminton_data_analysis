@@ -1,0 +1,803 @@
+{
+ "results": [
+  {
+   "tournament_id": 5265,
+   "date": "09  - 14 December",
+   "location": "Cuttack, India",
+   "tmt_url": "https://bwfbadminton.com/tournament/5265/odisha-masters-2025",
+   "tournament_model": {
+    "id": 5265,
+    "name": "Odisha Masters 2025",
+    "slug": "odisha-masters-2025",
+    "start_date": "2025-12-09 00:00:00",
+    "end_date": "2025-12-14 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 27,
+    "tournament_series_id": 275,
+    "country_model": {
+     "name": "India",
+     "code_iso3": "IND"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25872,
+     "name": "XD",
+     "score_player": 205,
+     "score_opponent": 175,
+     "match_count": 5,
+     "match_win": 4,
+     "match_lose": 1,
+     "match_percent": 80,
+     "game_count": 11,
+     "game_win": 8,
+     "game_lose": 3,
+     "game_percent": 72.72727272727273,
+     "points_percent": 53.94736842105263,
+     "position": "2nd"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5266,
+   "date": "02  - 07 December",
+   "location": "Guwahati, India",
+   "tmt_url": "https://bwfbadminton.com/tournament/5266/yonex-sunrise-guwahati-masters-2025",
+   "tournament_model": {
+    "id": 5266,
+    "name": "YONEX-SUNRISE Guwahati Masters 2025",
+    "slug": "yonex-sunrise-guwahati-masters-2025",
+    "start_date": "2025-12-02 00:00:00",
+    "end_date": "2025-12-07 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 27,
+    "tournament_series_id": 174,
+    "country_model": {
+     "name": "India",
+     "code_iso3": "IND"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25875,
+     "name": "XD",
+     "score_player": 129,
+     "score_opponent": 115,
+     "match_count": 3,
+     "match_win": 2,
+     "match_lose": 1,
+     "match_percent": 66.66666666666666,
+     "game_count": 7,
+     "game_win": 5,
+     "game_lose": 2,
+     "game_percent": 71.42857142857143,
+     "points_percent": 52.86885245901639,
+     "position": "QF"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5267,
+   "date": "25  - 30 November",
+   "location": "Lucknow, India",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5267/syed-modi-india-international-2025/",
+   "tournament_model": {
+    "id": 5267,
+    "name": "SYED MODI India International 2025",
+    "slug": "syed-modi-india-international-2025",
+    "start_date": "2025-11-25 00:00:00",
+    "end_date": "2025-11-30 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 26,
+    "tournament_series_id": 52,
+    "country_model": {
+     "name": "India",
+     "code_iso3": "IND"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25878,
+     "name": "XD",
+     "score_player": 222,
+     "score_opponent": 160,
+     "match_count": 5,
+     "match_win": 5,
+     "match_lose": 0,
+     "match_percent": 100,
+     "game_count": 11,
+     "game_win": 10,
+     "game_lose": 1,
+     "game_percent": 90.9090909090909,
+     "points_percent": 58.1151832460733,
+     "position": "1st"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5378,
+   "date": "11  - 16 November",
+   "location": "Yogyakarta, Indonesia",
+   "tmt_url": "https://bwfbadminton.com/tournament/5378/wondr-by-bni-indonesia-international-challenge-i-2025",
+   "tournament_model": {
+    "id": 5378,
+    "name": "WONDR BY BNI Indonesia International Challenge I 2025",
+    "slug": "wondr-by-bni-indonesia-international-challenge-i-2025",
+    "start_date": "2025-11-11 00:00:00",
+    "end_date": "2025-11-16 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 5,
+    "tournament_series_id": 396,
+    "country_model": {
+     "name": "Indonesia",
+     "code_iso3": "INA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 26850,
+     "name": "XD",
+     "score_player": 0,
+     "score_opponent": 0,
+     "match_count": 2,
+     "match_win": 1,
+     "match_lose": 1,
+     "match_percent": 50,
+     "game_count": 0,
+     "game_win": 0,
+     "game_lose": 0,
+     "game_percent": 0,
+     "points_percent": 0,
+     "position": "R16"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5232,
+   "date": "21  - 26 October",
+   "location": "Medan, Indonesia",
+   "tmt_url": "https://bwfbadminton.com/tournament/5232/wondr-by-bni-indonesia-masters-ii-2025",
+   "tournament_model": {
+    "id": 5232,
+    "name": "WONDR by BNI Indonesia Masters II 2025",
+    "slug": "wondr-by-bni-indonesia-masters-ii-2025",
+    "start_date": "2025-10-21 00:00:00",
+    "end_date": "2025-10-26 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 27,
+    "tournament_series_id": 67,
+    "country_model": {
+     "name": "Indonesia",
+     "code_iso3": "INA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25730,
+     "name": "XD",
+     "score_player": 35,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 45.45454545454545,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5223,
+   "date": "14  - 19 October",
+   "location": "Iskandar Puteri, Johor, Malaysia",
+   "tmt_url": "https://bwfbadminton.com/tournament/5223/allianz-malaysia-super-100-2025",
+   "tournament_model": {
+    "id": 5223,
+    "name": "ALLIANZ Malaysia Super 100 2025",
+    "slug": "allianz-malaysia-super-100-2025",
+    "start_date": "2025-10-14 00:00:00",
+    "end_date": "2025-10-19 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 27,
+    "tournament_series_id": 48,
+    "country_model": {
+     "name": "Malaysia",
+     "code_iso3": "MYS"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25688,
+     "name": "XD",
+     "score_player": 249,
+     "score_opponent": 232,
+     "match_count": 5,
+     "match_win": 4,
+     "match_lose": 1,
+     "match_percent": 80,
+     "game_count": 13,
+     "game_win": 8,
+     "game_lose": 5,
+     "game_percent": 61.53846153846154,
+     "points_percent": 51.767151767151766,
+     "position": "Final"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5284,
+   "date": "30 September - 05 October",
+   "location": "Al Ain, United Arab Emirates",
+   "tmt_url": "https://bwfbadminton.com/tournament/5284/al-ain-masters-2025",
+   "tournament_model": {
+    "id": 5284,
+    "name": "Al Ain Masters 2025",
+    "slug": "al-ain-masters-2025",
+    "start_date": "2025-09-30 00:00:00",
+    "end_date": "2025-10-05 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 27,
+    "tournament_series_id": 464,
+    "country_model": {
+     "name": "United Arab Emirates",
+     "code_iso3": "ARE"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25963,
+     "name": "XD",
+     "score_player": 287,
+     "score_opponent": 242,
+     "match_count": 5,
+     "match_win": 5,
+     "match_lose": 0,
+     "match_percent": 100,
+     "game_count": 14,
+     "game_win": 10,
+     "game_lose": 4,
+     "game_percent": 71.42857142857143,
+     "points_percent": 54.25330812854442,
+     "position": "1st"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5235,
+   "date": "16  - 21 September",
+   "location": "Riau ( formerly Solo), Indonesia",
+   "tmt_url": "https://bwfbadminton.com/tournament/5235/wondr-by-bni-indonesia-masters-i-2025",
+   "tournament_model": {
+    "id": 5235,
+    "name": "WONDR by BNI Indonesia Masters I 2025",
+    "slug": "wondr-by-bni-indonesia-masters-i-2025",
+    "start_date": "2025-09-16 08:00:00",
+    "end_date": "2025-09-21 08:00:00",
+    "type_id": 0,
+    "tournament_category_id": 27,
+    "tournament_series_id": 138,
+    "country_model": {
+     "name": "Indonesia",
+     "code_iso3": "INA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25742,
+     "name": "XD",
+     "score_player": 38,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 47.5,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5219,
+   "date": "09  - 14 September",
+   "location": "Ho Chi Minh, Vietnam",
+   "tmt_url": "https://bwfbadminton.com/tournament/5219/yonex-sunrise-vietnam-open-2025",
+   "tournament_model": {
+    "id": 5219,
+    "name": "YONEX SUNRISE Vietnam Open 2025",
+    "slug": "yonex-sunrise-vietnam-open-2025",
+    "start_date": "2025-09-09 08:00:00",
+    "end_date": "2025-09-14 08:00:00",
+    "type_id": 0,
+    "tournament_category_id": 27,
+    "tournament_series_id": 41,
+    "country_model": {
+     "name": "Vietnam",
+     "code_iso3": "VNM"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25664,
+     "name": "XD",
+     "score_player": 72,
+     "score_opponent": 76,
+     "match_count": 2,
+     "match_win": 1,
+     "match_lose": 1,
+     "match_percent": 50,
+     "game_count": 4,
+     "game_win": 2,
+     "game_lose": 2,
+     "game_percent": 50,
+     "points_percent": 48.64864864864865,
+     "position": "R16"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5236,
+   "date": "03  - 08 June",
+   "location": "Jakarta, Indonesia",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5236/kapal-api-indonesia-open-2025/",
+   "tournament_model": {
+    "id": 5236,
+    "name": "KAPAL API Indonesia Open 2025",
+    "slug": "kapal-api-indonesia-open-2025",
+    "start_date": "2025-06-03 08:00:00",
+    "end_date": "2025-06-08 08:00:00",
+    "type_id": 0,
+    "tournament_category_id": 23,
+    "tournament_series_id": 64,
+    "country_model": {
+     "name": "Indonesia",
+     "code_iso3": "INA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25749,
+     "name": "XD",
+     "score_player": 31,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 42.465753424657535,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5224,
+   "date": "20  - 25 May",
+   "location": "Kuala Lumpur, Malaysia",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5224/perodua-malaysia-masters-2025/",
+   "tournament_model": {
+    "id": 5224,
+    "name": "PERODUA Malaysia Masters 2025",
+    "slug": "perodua-malaysia-masters-2025",
+    "start_date": "2025-05-20 00:00:00",
+    "end_date": "2025-05-25 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 25,
+    "tournament_series_id": 50,
+    "country_model": {
+     "name": "Malaysia",
+     "code_iso3": "MYS"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25695,
+     "name": "XD",
+     "score_player": 161,
+     "score_opponent": 144,
+     "match_count": 3,
+     "match_win": 2,
+     "match_lose": 1,
+     "match_percent": 66.66666666666666,
+     "game_count": 8,
+     "game_win": 5,
+     "game_lose": 3,
+     "game_percent": 62.5,
+     "points_percent": 52.78688524590164,
+     "position": "QF"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5225,
+   "date": "13  - 18 May",
+   "location": "Patumwan,, Thailand",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5225/toyota-thailand-open-2025/",
+   "tournament_model": {
+    "id": 5225,
+    "name": "TOYOTA Thailand Open 2025",
+    "slug": "toyota-thailand-open-2025",
+    "start_date": "2025-05-13 00:00:00",
+    "end_date": "2025-05-18 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 25,
+    "tournament_series_id": 473,
+    "country_model": {
+     "name": "Thailand",
+     "code_iso3": "THA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25699,
+     "name": "XD",
+     "score_player": 34,
+     "score_opponent": 44,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 43.58974358974359,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5233,
+   "date": "06  - 11 May",
+   "location": "Taipei, Chinese Taipei",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5233/yonex-taipei-open-2025/",
+   "tournament_model": {
+    "id": 5233,
+    "name": "YONEX Taipei Open 2025",
+    "slug": "yonex-taipei-open-2025",
+    "start_date": "2025-05-06 00:00:00",
+    "end_date": "2025-05-11 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 26,
+    "tournament_series_id": 34,
+    "country_model": {
+     "name": "Chinese Taipei",
+     "code_iso3": "TWN"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25734,
+     "name": "XD",
+     "score_player": 239,
+     "score_opponent": 204,
+     "match_count": 5,
+     "match_win": 4,
+     "match_lose": 1,
+     "match_percent": 80,
+     "game_count": 12,
+     "game_win": 9,
+     "game_lose": 3,
+     "game_percent": 75,
+     "points_percent": 53.95033860045147,
+     "position": "2nd"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5260,
+   "date": "27 April - 04 May",
+   "location": "Xiamen, China",
+   "tmt_url": "https://bwfsudirmancup.bwfbadminton.com/results/5260/totalenergies-bwf-sudirman-cup-finals-2025",
+   "tournament_model": {
+    "id": 5260,
+    "name": "TotalEnergies BWF Sudirman Cup Finals 2025",
+    "slug": "totalenergies-bwf-sudirman-cup-finals-2025",
+    "start_date": "2025-04-27 00:00:00",
+    "end_date": "2025-05-04 00:00:00",
+    "type_id": 1,
+    "tournament_category_id": 21,
+    "tournament_series_id": 144,
+    "country_model": {
+     "name": "China",
+     "code_iso3": "CHN"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 5,
+     "name": "Mixed",
+     "score_player": 25,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 37.3134328358209,
+     "position": "N/A"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5200,
+   "date": "08  - 13 April",
+   "location": "Ningbo, China",
+   "tmt_url": "https://bwfbadminton.com/tournament/5200/bank-of-ningbo-badminton-asia-championships-2025",
+   "tournament_model": {
+    "id": 5200,
+    "name": "BANK OF NINGBO Badminton Asia Championships 2025",
+    "slug": "bank-of-ningbo-badminton-asia-championships-2025",
+    "start_date": "2025-04-08 08:00:00",
+    "end_date": "2025-04-13 08:00:00",
+    "type_id": 0,
+    "tournament_category_id": 11,
+    "tournament_series_id": 261,
+    "country_model": {
+     "name": "China",
+     "code_iso3": "CHN"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25568,
+     "name": "XD",
+     "score_player": 27,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 39.130434782608695,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5195,
+   "date": "18  - 23 March",
+   "location": "Basel, Switzerland",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5195/yonex-swiss-open-2025/",
+   "tournament_model": {
+    "id": 5195,
+    "name": "YONEX Swiss Open 2025",
+    "slug": "yonex-swiss-open-2025",
+    "start_date": "2025-03-18 00:00:00",
+    "end_date": "2025-03-23 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 26,
+    "tournament_series_id": 256,
+    "country_model": {
+     "name": "Switzerland",
+     "code_iso3": "CHE"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25543,
+     "name": "XD",
+     "score_player": 16,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 27.586206896551722,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5192,
+   "date": "11  - 16 February",
+   "location": "Qingdao, China",
+   "tmt_url": "https://bwfbadminton.com/tournament/5192/tsingtao-badminton-asia-mixed-team-championship-2025",
+   "tournament_model": {
+    "id": 5192,
+    "name": "TSINGTAO Badminton Asia Mixed Team Championship 2025",
+    "slug": "tsingtao-badminton-asia-mixed-team-championship-2025",
+    "start_date": "2025-02-11 00:00:00",
+    "end_date": "2025-02-16 00:00:00",
+    "type_id": 1,
+    "tournament_category_id": 17,
+    "tournament_series_id": 363,
+    "country_model": {
+     "name": "China",
+     "code_iso3": "CHN"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 5,
+     "name": "Mixed",
+     "score_player": 150,
+     "score_opponent": 151,
+     "match_count": 3,
+     "match_win": 2,
+     "match_lose": 1,
+     "match_percent": 66.66666666666666,
+     "game_count": 8,
+     "game_win": 4,
+     "game_lose": 4,
+     "game_percent": 50,
+     "points_percent": 49.83388704318937,
+     "position": "N/A"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5221,
+   "date": "28 January - 02 February",
+   "location": "Patumwan, Thailand",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5221/princess-sirivannavari-thailand-masters-2025/",
+   "tournament_model": {
+    "id": 5221,
+    "name": "PRINCESS SIRIVANNAVARI Thailand Masters 2025",
+    "slug": "princess-sirivannavari-thailand-masters-2025",
+    "start_date": "2025-01-28 00:00:00",
+    "end_date": "2025-02-02 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 26,
+    "tournament_series_id": 1,
+    "country_model": {
+     "name": "Thailand",
+     "code_iso3": "THA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25679,
+     "name": "XD",
+     "score_player": 233,
+     "score_opponent": 191,
+     "match_count": 5,
+     "match_win": 4,
+     "match_lose": 1,
+     "match_percent": 80,
+     "game_count": 12,
+     "game_win": 9,
+     "game_lose": 3,
+     "game_percent": 75,
+     "points_percent": 54.95283018867924,
+     "position": "2nd"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5234,
+   "date": "21  - 26 January",
+   "location": "Jakarta, Indonesia",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5234/daihatsu-indonesia-masters-2025/",
+   "tournament_model": {
+    "id": 5234,
+    "name": "DAIHATSU Indonesia Masters 2025",
+    "slug": "daihatsu-indonesia-masters-2025",
+    "start_date": "2025-01-21 00:00:00",
+    "end_date": "2025-01-26 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 25,
+    "tournament_series_id": 130,
+    "country_model": {
+     "name": "Indonesia",
+     "code_iso3": "INA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25739,
+     "name": "XD",
+     "score_player": 31,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 42.465753424657535,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5268,
+   "date": "14  - 19 January",
+   "location": "New Delhi, India",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5268/yonex-sunrise-india-open-2025/",
+   "tournament_model": {
+    "id": 5268,
+    "name": "YONEX-SUNRISE India Open 2025",
+    "slug": "yonex-sunrise-india-open-2025",
+    "start_date": "2025-01-14 00:00:00",
+    "end_date": "2025-01-19 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 24,
+    "tournament_series_id": 5,
+    "country_model": {
+     "name": "India",
+     "code_iso3": "IND"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25883,
+     "name": "XD",
+     "score_player": 77,
+     "score_opponent": 70,
+     "match_count": 2,
+     "match_win": 1,
+     "match_lose": 1,
+     "match_percent": 50,
+     "game_count": 4,
+     "game_win": 2,
+     "game_lose": 2,
+     "game_percent": 50,
+     "points_percent": 52.38095238095239,
+     "position": "R16"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5222,
+   "date": "07  - 12 January",
+   "location": "Kuala Lumpur, Malaysia",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5222/petronas-malaysia-open-2025/",
+   "tournament_model": {
+    "id": 5222,
+    "name": "PETRONAS Malaysia Open 2025",
+    "slug": "petronas-malaysia-open-2025",
+    "start_date": "2025-01-07 00:00:00",
+    "end_date": "2025-01-12 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 23,
+    "tournament_series_id": 6,
+    "country_model": {
+     "name": "Malaysia",
+     "code_iso3": "MYS"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25685,
+     "name": "XD",
+     "score_player": 76,
+     "score_opponent": 67,
+     "match_count": 2,
+     "match_win": 1,
+     "match_lose": 1,
+     "match_percent": 50,
+     "game_count": 4,
+     "game_win": 2,
+     "game_lose": 2,
+     "game_percent": 50,
+     "points_percent": 53.14685314685315,
+     "position": "R16"
+    }
+   ]
+  }
+ ],
+ "drawCount": 1
+}

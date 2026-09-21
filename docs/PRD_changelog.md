@@ -1,5 +1,32 @@
 # PRD Changelog
 
+## Iteration 6 — 2026-09-21 (R5 + R6: matches, partners, opponents, game scores)
+
+**What changed**
+- Added `bwf_player/matches.py`: `get_matches(player_id, entry, client=None)` (one request per event entry) returning `EventMatches`, plus pure `parse_matches` and `check_totals`. Each `PlayerMatch` is seen from the subject's side: partner (None in singles), opponents, round, local date, duration, `won`, `status` (played / bye / walkover / retired / disqualified / unknown) and every game's points.
+- `check_totals` compares the parsed matches with the totals the tournament list gives for the event (matches, games, points), so a parsing error shows up instead of passing silently.
+- `bwf_player/parsing.py`: the three coercion helpers (`to_int`, `to_date`, `clean_text`) moved out of `tournaments.py` so both parsers share them. Earlier-iteration code touched: that move (behaviour unchanged, all 101 R4 tests still pass), additions to `models.py` (`MatchPlayer`, `GameScore`, `PlayerMatch`, `EventMatches`), `__init__.py`, `tests/fakes.py` (matches endpoint, three more players' tournament lists) and `tests/test_live.py`.
+- Fixtures: 29 real match responses (all 19 of Christie's events in the window, plus doubles, mixed doubles, team-event doubles, qualification, retirement, bye and walkover cases) and tournament lists for Fajar ALFIAN, Dejan FERDINANSYAH and Apriyani RAHAYU, trimmed from real responses (`tests/fixtures/README.md`).
+- PRD_master: version 1.2, endpoint row for `vue-player-tmt-matches` rewritten with what was found, R5/R6 design notes, schema, iteration table, open question 6 resolved.
+
+**Why**
+- The user wants the partner, the opponents and the score of every game for each tournament. The match breakdown endpoint has all three. Fixtures come from real responses so the parser is written against what the site actually sends, not against a guess.
+
+**What was tested (`test_results/latest.txt`)**
+- Offline: **467 passed** (334 before; 133 new in `tests/test_matches.py`): a full match compared field by field; games oriented correctly when the subject is side 1 or side 2 (including a synthetic test that swaps the sides of one match and gets the same result); singles, men's/women's/mixed doubles, partner found when the subject is listed second, partner changing between team-event ties; a group stage, a qualification plus main draw, the draw-as-object quirk; retirement, walkover and bye; **every one of the 29 real events reproduces the site's totals exactly**; `check_totals` (each of the six totals, missing totals, a dropped match); request parameters (team events use `tmtType=1`); invalid ids make no request; Cloudflare block propagates; parser robustness (unreadable draws and matches, duplicate ids, flat-field fallbacks, unusable winners, every status code, game ordering, unreadable games, 0-0 games, score-text fallback, date and duration edge cases, input not mutated).
+- Live: **13 passed** (2 new): Christie's three most recent events and Fajar ALFIAN's two most recent (men's doubles) reproduce the site's totals; singles have no partner and one opponent, doubles have a partner and two opponents; every game in a played match ends at 21 (cap 30) and is won by two.
+- Development check on real data: 72 events (215 matches) of five players (Christie, Fajar ALFIAN, Dejan FERDINANSYAH, Apriyani RAHAYU, Aadhya SHINE) parsed with **no disagreement** with the site's totals: 210 played, 3 byes, 1 retirement, 1 walkover.
+
+**Findings**
+- The subject is side 1 in some matches and side 2 in others (Christie is side 2 in most, side 1 in the Thomas Cup), so the side must come from the player ids.
+- A draw's matches can be an object with gapped keys (`{"2": {...}}`) instead of a list (real mixed-doubles event). Bug avoided because it was found by inspecting real data first; it is now a fixture and a test.
+- `match_time_utc` is only the day. Ordering by it and by id put a qualifying QF before the qualifying R16 (both on one day). **Bug found by a test written from real data and fixed:** the order now uses `actualTimeUTC` / `timeUTC` from `match_start_time_details`.
+- The site counts a **bye** as a match won in its totals. Byes therefore appear as their own status (`won` is None) and `check_totals` adds them to the wins.
+- Team events and group stages have the same match shape as ordinary events; a team-event doubles player's partner changes between ties.
+- **Not seen in real data**: a disqualification (`score_status` 3, mapped from the site's own template) and a match still in progress. Handled defensively, untested against real data (PRD section 8, item 6).
+- The position label `Final` (Dejan FERDINANSYAH, one event in 2025, 4 wins and 1 loss) also exists next to `2nd`; its exact meaning is not documented by the site. It is stored as the site writes it.
+- A bug of my own, caught by the reconciliation run: the first version of the bye check contained control characters instead of a regular-expression word boundary (a quoting slip in a patch script), so byes were reported as played matches. Fixed, and a scan of all `.py`, `.md` and `.json` files for stray control characters found none.
+
 ## Iteration 5 — 2026-09-21 (R4: tournaments and results)
 
 **What changed**

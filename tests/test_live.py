@@ -124,3 +124,33 @@ def test_live_tournaments_of_an_unknown_player(client: BwfHttpClient) -> None:
 
     history = get_tournaments("999999999", client)
     assert history.entries == [] and history.notes
+
+
+def test_live_matches_of_a_singles_player_reproduce_the_sites_totals(client: BwfHttpClient) -> None:
+    from bwf_player import get_matches, get_tournaments
+
+    history = get_tournaments("73442", client, with_categories=False)
+    for entry in history.entries[-3:]:  # the three most recent events
+        result = get_matches("73442", entry, client)
+        assert result.totals_agree is True, (entry.name, result.notes)
+        assert result.matches and result.notes == []
+        for match in result.matches:
+            assert match.player.player_id == 73442 and match.partner is None
+            if match.status == "played":
+                assert len(match.opponents) == 1 and match.won is not None and match.games
+                for game in match.games:  # a game goes to 21 (cap 30), won by 2 unless capped
+                    top, low = max(game.player_points, game.opponent_points), min(game.player_points, game.opponent_points)
+                    assert top >= 21 and (top - low >= 2 or top == 30)
+
+
+def test_live_matches_of_a_doubles_player_have_partners(client: BwfHttpClient) -> None:
+    from bwf_player import get_matches, get_tournaments
+
+    history = get_tournaments("88876", client, with_categories=False)  # Fajar ALFIAN, men's doubles
+    for entry in history.entries[-2:]:
+        result = get_matches("88876", entry, client)
+        assert result.totals_agree is True, (entry.name, result.notes)
+        for match in result.matches:
+            assert match.partner is not None and match.partner.player_id != 88876
+            if match.status == "played":
+                assert len(match.opponents) == 2 and match.games

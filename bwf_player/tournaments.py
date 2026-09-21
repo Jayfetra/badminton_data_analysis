@@ -22,6 +22,9 @@ from bwf_player.exceptions import BlockedByCloudflareError, BwfClientError, Inva
 from bwf_player.http_client import BwfHttpClient
 from bwf_player.models import TournamentEntry, TournamentHistory
 from bwf_player.names import validate_player_id
+from bwf_player.parsing import clean_text as _clean_text
+from bwf_player.parsing import to_date as _date
+from bwf_player.parsing import to_int as _int
 
 logger = logging.getLogger(__name__)
 
@@ -257,31 +260,3 @@ def _dedupe(entries: list[TournamentEntry]) -> list[TournamentEntry]:
             seen.add(key)
             unique.append(entry)
     return unique
-
-
-def _int(value: object) -> int | None:
-    if isinstance(value, bool):
-        return None
-    if isinstance(value, int):
-        return value if value >= 0 else None
-    if isinstance(value, float):
-        return int(value) if value.is_integer() and value >= 0 else None
-    if isinstance(value, str) and value.strip().isascii() and value.strip().isdigit():
-        return int(value.strip())
-    return None
-
-
-def _date(value: object) -> date | None:
-    if not isinstance(value, str):
-        return None
-    try:
-        return date.fromisoformat(value.strip()[:10])
-    except ValueError:
-        return None
-
-
-def _clean_text(value: object) -> str | None:
-    if not isinstance(value, str):
-        return None
-    text = " ".join(value.split())
-    return text or None

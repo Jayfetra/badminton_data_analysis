@@ -7,8 +7,13 @@ from bwf_player.exceptions import (
     InvalidInputError,
 )
 from bwf_player.lookup import format_result, lookup_player
+from bwf_player.matches import check_totals, get_matches
 from bwf_player.models import (
+    EventMatches,
+    GameScore,
+    MatchPlayer,
     PlayerCandidate,
+    PlayerMatch,
     PlayerProfile,
     PlayerRanking,
     PlayerResult,
@@ -25,8 +30,12 @@ __all__ = [
     "BlockedByCloudflareError",
     "BwfClientError",
     "BwfConfig",
+    "EventMatches",
+    "GameScore",
     "InvalidInputError",
+    "MatchPlayer",
     "PlayerCandidate",
+    "PlayerMatch",
     "PlayerProfile",
     "PlayerRanking",
     "PlayerResult",
@@ -34,7 +43,9 @@ __all__ = [
     "SearchResult",
     "TournamentEntry",
     "TournamentHistory",
+    "check_totals",
     "format_result",
+    "get_matches",
     "get_tournaments",
     "history_window",
     "lookup_player",

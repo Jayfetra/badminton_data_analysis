@@ -115,6 +115,69 @@ class TournamentHistory(BaseModel):
     notes: list[str] = Field(default_factory=list)
 
 
+MatchStatus = Literal["played", "bye", "walkover", "retired", "disqualified", "unknown"]
+
+
+class MatchPlayer(BaseModel):
+    """A player in a match (the subject, a partner or an opponent). `country` is the ISO code."""
+
+    player_id: int | None = None
+    name: str
+    country: str | None = None
+
+
+class GameScore(BaseModel):
+    """One game, from the subject's side: `player_points` are the subject's team's points."""
+
+    game_no: int = Field(ge=1)
+    player_points: int = Field(ge=0)
+    opponent_points: int = Field(ge=0)
+
+
+class PlayerMatch(BaseModel):
+    """One match seen from the subject player's side (R5, R6).
+
+    `partner` is None in singles; `opponents` has one player in singles and two in doubles (empty
+    only if the site names none). `side` (1 or 2) is the subject's side in the site's own match
+    record, which is what the database keeps. `won` is None for a bye (nobody was played) and if
+    the site's winner is unusable. `games` is empty for a bye and a walkover; a retirement keeps the
+    points of the game in progress. Filter `status == "played"` for matches that were really played.
+    `notes` holds anything odd about this one match.
+    """
+
+    match_id: int
+    tournament_id: int
+    draw_id: int | None = None
+    draw_name: str | None = None
+    round: str | None = None
+    match_date: date | None = None
+    duration_min: int | None = None
+    side: Literal[1, 2]
+    player: MatchPlayer
+    partner: MatchPlayer | None = None
+    opponents: list[MatchPlayer] = Field(default_factory=list)
+    won: bool | None = None
+    status: MatchStatus = "played"
+    games: list[GameScore] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+
+
+class EventMatches(BaseModel):
+    """Every match of one event entry, and whether it agrees with the site's own totals.
+
+    `totals_agree` is True when matches, games and points won/lost equal the totals on the
+    tournament entry, False when they differ (`notes` lists which), None when the entry has no
+    totals to compare with.
+    """
+
+    tournament_id: int
+    event_code: str | None = None
+    event_id: int | None = None
+    matches: list[PlayerMatch] = Field(default_factory=list)
+    totals_agree: bool | None = None
+    notes: list[str] = Field(default_factory=list)
+
+
 class PlayerResult(BaseModel):
     """End-to-end result the notebook displays."""
 

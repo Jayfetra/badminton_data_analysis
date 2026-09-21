@@ -7,7 +7,8 @@ Type a badminton player's name and get their personal details and ranking from [
 | **Search** | The player's profile URL. Ignores case, accents and word order; tolerates typos in full names; returns ranked candidates when the name is ambiguous; a clear "not found" otherwise. |
 | **Personal details** | Nationality, height (cm), playing hand (Right/Left). |
 | **Ranking** | Current rank and how many consecutive weeks the player has held it (plus since when). |
-| **Tournaments (new, in progress)** | Every tournament the player entered in the last year, with the result per event (`1st`, `QF`, ...), the record and the category. Partners, opponents and per-game scores are coming in the next iterations. |
+| **Tournaments (new, in progress)** | Every tournament the player entered in the last year, with the result per event (`1st`, `QF`, ...), the record and the category. |
+| **Matches (new, in progress)** | For each event: every match with the partner, the opponents, the round, the date and the points of every game. Saving to SQLite/CSV and the one-call download come next. |
 
 A value the site does not list is `null`, with a note explaining it. A missing field never fails the whole request.
 
@@ -59,7 +60,7 @@ get_ranking(pid)                                 # current_rank, weeks_at_curren
 get_ranking(pid, event_id="9-90070")             # a different ranking event (ids are listed in other_events)
 ```
 
-**Tournaments in the last year** (Iteration 5; partners, opponents, game scores and SQLite/CSV storage follow):
+**Tournaments and matches in the last year** (Iterations 5-6; SQLite/CSV storage and a one-call download follow):
 
 ```python
 from bwf_player import get_tournaments
@@ -68,6 +69,15 @@ history = get_tournaments(pid)                    # 2025-09-21 .. 2026-09-21 whe
 for e in history.entries:                         # oldest first, one row per event entered
     print(e.start_date, e.name, e.event_code, e.position, e.category)
 # 2026-09-01 LI-NING China Masters 2026 MS R16 HSBC BWF World Tour Super 750
+
+from bwf_player import get_matches
+event = get_matches(pid, history.entries[-1])     # one request: every match of that event
+for m in event.matches:
+    scores = ", ".join(f"{g.player_points}-{g.opponent_points}" for g in m.games)
+    print(m.round, "won" if m.won else "lost", m.partner and m.partner.name, [o.name for o in m.opponents], scores)
+# R32 won None ['LEONG Jun Hao'] 21-17, 21-19
+# R16 lost None ['Jason GUNAWAN'] 16-21, 16-21
+event.totals_agree                                # True: the matches add up to the site's own totals
 ```
 
 `position` is the site's own label (`null` for team events, which have none). A tournament counts if its dates overlap the window. `get_tournaments(pid, since=date(...), until=date(...))` sets another window. The default window costs two requests plus one to four for the categories.
@@ -81,7 +91,7 @@ The site is a JavaScript app that loads its data from a JSON API, so the tool ca
 ## Project layout
 
 ```
-bwf_player/      the package: http_client, names, search, profile, ranking, lookup, tournaments, models, config
+bwf_player/      the package: http_client, names, search, profile, ranking, lookup, tournaments, matches, parsing, models, config
 notebook.ipynb   thin interface over the package (committed with its outputs)
 tests/           pytest; offline tests use saved real API responses in tests/fixtures/
 scripts/         save_test_results.py, execute_notebook.py
@@ -104,7 +114,7 @@ python scripts/execute_notebook.py    # re-run the notebook and save its outputs
 - **Unofficial API.** It is the site's own front-end API, undocumented, and may change without notice. **The site's terms and conditions have not been reviewed**; check them before any use beyond personal research.
 - **Search limits.** A typo inside a one-word query ("cristie") is not matched. A typo'd name for a player missing from the site's player list (e.g. Kento Momota) is not found. A reversed name for such a player, when its words are common, may fail ("Dan Lin" does not find "LIN Dan"). Details and workarounds: PRD section 8.
 - **Ranking events.** The result reports the first event the site lists (usually singles); others are in `other_events`.
-- **Tournament history.** Only individual (non-para) tournaments are covered; the category is `null` for tournaments the site's calendar gives none (62 of the 326 in the last year's calendar; none for Christie's). Team-event and group-stage matches are not yet checked (matches arrive in the next iteration).
+- **Tournament history.** Para tournaments are not covered; the category is `null` for tournaments the site's calendar gives none (62 of the 326 in the last year's calendar; none for Christie's). A bye is returned as its own status (`bye`, no result); filter `status == "played"` for matches that were really played. Disqualifications and matches still in progress are handled defensively but were not present in the real data used for testing.
 - **Unknown id vs never ranked.** The site answers both the same way, so both come back as "no ranking events".
 
 ## Documentation

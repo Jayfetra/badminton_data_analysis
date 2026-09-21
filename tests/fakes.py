@@ -33,6 +33,12 @@ _TOURNAMENT_FIXTURES = {
     ("73442", "2025"): "tournaments_christie_2025.json",
     ("89438", "2026"): "tournaments_aadhya_2026.json",
     ("89438", "2025"): "tournaments_aadhya_2025.json",
+    ("88876", "2026"): "tournaments_fajar_2026.json",
+    ("88876", "2025"): "tournaments_fajar_2025.json",
+    ("81458", "2026"): "tournaments_dejan_2026.json",
+    ("81458", "2025"): "tournaments_dejan_2025.json",
+    ("81462", "2026"): "tournaments_apriyani_2026.json",
+    ("81462", "2025"): "tournaments_apriyani_2025.json",
 }
 
 
@@ -88,6 +94,9 @@ class FakeApiClient:
             key = (str(params.get("playerId")), str(params.get("tmtYear")))
             fixture = _TOURNAMENT_FIXTURES.get(key)
             return load_fixture(fixture) if fixture else {"results": [], "drawCount": 1}
+        if endpoint == "vue-player-tmt-matches":
+            name = f"matches_{params.get('playerId')}_{params.get('tmtId')}_{params.get('eventId')}.json"
+            return load_fixture(name) if (FIXTURES / name).exists() else {"results": [], "drawCount": 1}
         if endpoint == "vue-tournaments-search":
             return load_fixture(f"calendar_page{int(params.get('page', 1))}.json")
         raise AssertionError(f"unexpected endpoint {endpoint}")

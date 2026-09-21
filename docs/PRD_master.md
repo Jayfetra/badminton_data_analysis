@@ -1,6 +1,6 @@
 # PRD Master — BWF Player Lookup
 
-**Version:** 1.1 (Iteration 5: tournaments and results, R4) · **Last updated:** 2026-09-21
+**Version:** 1.2 (Iteration 6: matches, partners, opponents, game scores, R5-R6) · **Last updated:** 2026-09-21
 
 Single source of truth for requirements, architecture decisions, data schema and open questions.
 
@@ -14,8 +14,8 @@ Given a badminton player's name, retrieve profile and ranking data from bwfbadmi
 | R2 | From the profile: nationality, height, playing hand. Missing field -> `null` plus a note; never fails the whole request. |
 | R3 | From the ranking tab: current rank and how long the player has held it. Unranked -> `null` plus a note. |
 | R4 | Match history (section 10, added 2026-09-21): the tournaments one player entered in the last year, with the result per event. **Done (Iteration 5).** |
-| R5 | For each match: the player's partner and the opponent(s). Planned (Iteration 6). |
-| R6 | For each match: round, date, outcome, status and the points of every game. Planned (Iteration 6). |
+| R5 | For each match: the player's partner and the opponent(s). **Done (Iteration 6).** |
+| R6 | For each match: round, date, outcome, status and the points of every game. **Done (Iteration 6).** |
 | R7 | Save everything to SQLite (re-runnable) and export CSV. Planned (Iteration 7). |
 
 Out of scope: anything not listed above.
@@ -43,7 +43,7 @@ Method: `curl` with a browser User-Agent, inspecting page source and the inline 
 | `vue-player-ranking-highest` | `rankingEvent`, `playerId`, `isPara=false` | `{"rank", "date", "total"}`: best rank ever, its latest date, total weeks at it. Not needed for R3. | Inspected, not used |
 | `vue-player-tournaments` | `playerId`, `tmtYear`, `activeTab=3`, `isPara=false`, `drawCount`, `searchKey`, `locale` | **R4 source.** `results` is a list, one item per tournament the player entered in that calendar year (Christie: 18 in 2025, 12 in 2026). Item: `tournament_id`, `date`, `location`, `tmt_url`, `tournament_model` (`name`, `start_date`, `end_date`, `type_id`: 0 for every individual tournament seen, 1 for the two team events seen (Sudirman Cup, Thomas & Uber Cup), `country_model`, plus about 250 unused fields) and `draws[]`, one per event entered: `name` (MS, WD, ...), `event_id`, **`position`** (the result: `1st`, `2nd`, `3rd`, `QF`, `R16`, `R32`, `R3` for a finals group stage, `Qual. R32`; `N/A` for team events), `match_win/lose/count`, `game_win/lose/count`, `score_player`, `score_opponent`. An unknown id yields no tournaments (checked live with id 999999999). | Used (Iteration 5) |
 | `vue-tournaments-search` | `startDate`, `endDate`, `page`, `perPage`, `drawCount`, `activeTab=1` | The site calendar. `results.data[]` with `id`, `name`, `start_date`, `end_date`, `location`, `country`, `category` ("HSBC BWF World Tour Super 750"); `results.last_page`. For 2025-09-21..2026-09-21: 326 tournaments, sorted by start date, 100 per page. **62 of them have no `category` key.** Used only to add the category to R4 entries. | Used (Iteration 5) |
-| `vue-player-tmt-matches` | `playerId`, `tmtId`, `tmtType` (= `tournament_model.type_id`), `eventId` (= draw `event_id`), `activeTab=3`, `isPara=false`, `drawCount`, `locale` | **R5/R6 source.** `results` is `{draw_id: [match, ...]}`. Per match: `id`, `round_name`, `draw_name_full`, `match_time`, `duration`, `winner` (1/2), `player_win`, `status_name`, `score_status`, `t1p1..t1p2_player_model` and `t2p1..t2p2_player_model` (id, name, slug; `null` when the slot is empty), `*_country`, **`match_set_model[]`** = `{ordering, team1, team2}` (points per game) and the HTML strings `team1Score`/`team2Score`. Probed once (Christie, China Masters 2026: one singles match, games 21-17 and 21-19). Team-event and group-stage shapes are not yet verified. | Inspected; used from Iteration 6 |
+| `vue-player-tmt-matches` | `playerId`, `tmtId`, `tmtType` (= `tournament_model.type_id`), `eventId` (= draw `event_id`), `activeTab=3`, `isPara=false`, `drawCount`, `locale` | **R5/R6 source.** `results` is `{draw_id: matches}`: one draw for a knockout event, several when the event has a qualification and a main draw, or a group stage and a knockout. **A draw's matches are usually a list but can be an object with gapped keys (`{"2": {...}}`)**, seen on a real mixed-doubles event. Per match: `id`, `round_name`, `draw_name` (`MS`, `MS - Group A`, `XD - Qualification`, `Thomas Cup - Group D`), `winner` (side 1 or 2), `player_win`, `status_name`, `score_status`, `t1p1..t1p2_player_model` and `t2p1..t2p2_player_model` (id, name, slug; `null` for an empty slot), `t*_country` (ISO code), **`match_set_model[]`** = `{ordering, team1, team2}` (points per game), the HTML strings `team1Score`/`team2Score`, `result_team1/2` (games won), `duration` (minutes) and `match_start_time_details` (a JSON *string* with `dateLocal`, `dateUTC`, `timeUTC`, `actualTimeUTC`). `match_time_utc` is only the day, so it cannot order a day's rounds. **The subject is side 1 in some matches and side 2 in others**, so the side is found from the player ids. Team events (Sudirman, Thomas & Uber Cup) use the same shape, one row per tie, with `tmtType=1`. | Used (Iteration 6) |
 | `vue-player-tmt-years` | `playerId`, `activeTab`, `isPara` | Years with results (`[{"year": 2026}, ...]`). Not needed: the years come from the requested window. | Inspected, not used |
 | `vue-tournament-matches` | `tmtId`, `tmtTab`, `tmtType`, `courtCode`, `eventCode`, `hideTeamMatches`, `isPara`, `searchKey` | All matches of a tournament (the tournament page's results tab). Returned `results: null` for the parameter values tried (`tmtTab` = `matches` and `match`); the page also holds a `selectedDate`, so it is probably per day. Not needed for the per-player design. | Inspected, parked |
 
@@ -71,7 +71,7 @@ Notebook is a thin interface over the `bwf_player` package.
 bwf_player/
   config.py       BwfConfig (pydantic): thresholds, rate limit, cache, URLs, timeouts
   exceptions.py   BwfClientError, BlockedByCloudflareError, InvalidInputError
-  models.py       PlayerCandidate, SearchResult, PlayerProfile, PlayerRanking, PlayerResult, TournamentEntry, TournamentHistory
+  models.py       PlayerCandidate, SearchResult, PlayerProfile, PlayerRanking, PlayerResult, TournamentEntry, TournamentHistory, PlayerMatch, GameScore, MatchPlayer, EventMatches
   http_client.py  session bootstrap, rate limit, retry/backoff, disk cache, block detection
   names.py        query sanitizing, name normalization, slug derivation, player-id validation
   search.py       R1 (Iteration 1)
@@ -79,6 +79,8 @@ bwf_player/
   ranking.py      R3 (Iteration 3)
   lookup.py       lookup_player (search -> profile -> ranking) and format_result (Iteration 4)
   tournaments.py  R4: history_window, get_tournaments (tournaments and results in a date window) (Iteration 5)
+  matches.py      R5/R6: get_matches (partner, opponents, per-game scores of one event), check_totals (Iteration 6)
+  parsing.py      to_int, to_date, clean_text: defensive coercion shared by the parsers
 notebook.ipynb    thin interface over the package; committed with its executed outputs
 tests/            pytest; offline unit tests on saved fixtures; @pytest.mark.live smoke tests
 scripts/          save_test_results.py (both suites -> test_results/latest.txt), execute_notebook.py (runs notebook.ipynb, saves outputs)
@@ -120,6 +122,14 @@ test_results/     latest.txt: full output of the most recent test run (overwritt
   - *Result*: `position` is the site's own label. `N/A` (team events) and blank become `null`. Match, game and point totals are copied as the site's summary and are what Iteration 6 reconciles the parsed matches against.
   - *Category*: from the calendar, whitespace-normalised. Where the calendar has no category (62 of 326 tournaments in the window) or lacks the tournament, it is `null` with a note; if the calendar request fails (other than a Cloudflare block, which always propagates) the tournaments are still returned with a note.
   - *Robustness*: a row without a usable id, name or dates is skipped and counted in the notes. Counts are coerced defensively (negative, boolean, NaN and non-numeric values become `null`). Malformed payloads raise `BwfClientError`. Same `validate_player_id` as R2/R3. No player at all in the window is a normal result (empty list plus a note).
+- **Matches (R5 + R6, implemented in Iteration 6).** `matches.get_matches(player_id, entry, client=None)` takes a `TournamentEntry` from R4 and makes one request (none if the entry has no event id), returning `EventMatches` (matches, `totals_agree`, notes).
+  - *Perspective*: the subject's side is found from the player ids (`t1p1/t1p2/t2p1/t2p2_player_model`, falling back to the flat `team*_player*_id` fields). A match that names the subject on neither or both sides is skipped and counted in the notes. `partner` is the other member of the subject's pair (None in singles, and per tie in team events); `opponents` is the other side. Games are oriented so `player_points` is the subject's side; `side` (1 or 2) is kept because it is what the database stores.
+  - *Games*: from `match_set_model`, sorted by `ordering`; unreadable games are left out and noted; 0-0 games (never played) are dropped. Only if the structured list is missing are the `<span>` score texts used (noted). The parsed games are also checked against the recorded game result (`result_team1/2`) and a disagreement is noted (skipped for retirements).
+  - *Status*: `played`, `bye`, `walkover`, `retired`, `disqualified` or `unknown`. `score_status` 0/1/2/3 is read as played/walkover/retired/disqualified, the mapping in the site's own match template; codes 1 and 2 were confirmed on real matches, **3 (disqualified) never appeared in the data seen**. Anything else is `unknown`. A **bye** is a match with no opponent whose score text is "BYE": `won` is None, no games, and it is not a played match (filter `status == "played"` for those). A **walkover** has no games and a result. A **retirement** keeps the points of the game in progress.
+  - *Order*: by real start time (`actualTimeUTC`, else the scheduled `timeUTC`, else `match_time_utc`), then id. Ordering by `match_time_utc` and id was wrong on a real event (two qualifying rounds on one day).
+  - *Date*: the local date from `match_start_time_details`, else `match_time`.
+  - *Reconciliation* (`check_totals`): matches won/lost, games won/lost and points for/against, as computed from the parsed matches, must equal the totals the tournament list gives for the event. **The site counts a bye as a match won**, so byes are added to the wins for this comparison. A difference sets `totals_agree=False` and is listed in the notes; an entry without totals gives None.
+  - *Robustness*: malformed payloads raise `BwfClientError`; an unreadable draw or match is skipped and counted; the same match id in two draws is kept once; names have whitespace collapsed (the site has double spaces, e.g. "Mohamed  Abderrahime BELARBI").
 - **Input safety.** Names are sanitized as above and passed to the API only via `requests` `params` (encoded), never string-concatenated into URLs. Server queries use only the normalized (alphanumeric) tokens. Player ids/slugs are URL-quoted when building profile URLs.
 - **No secrets** are used or stored. The session cookie is fetched at runtime and kept in memory.
 
@@ -135,12 +145,16 @@ See `bwf_player/models.py`.
 - `PlayerResult`: `search`, `profile`, `ranking`, `fetched_at`
 - `TournamentEntry` (R4): `tournament_id`, `name`, `category`, `start_date`, `end_date`, `location`, `country`, `type_id`, `url`, `event_code`, `event_id`, `position`, `matches_won`, `matches_lost`, `games_won`, `games_lost`, `points_for`, `points_against`
 - `TournamentHistory` (R4): `player_id`, `since`, `until`, `entries`, `notes`
+- `MatchPlayer` (R5): `player_id`, `name`, `country` (ISO code)
+- `GameScore` (R6): `game_no`, `player_points`, `opponent_points` (subject's side first)
+- `PlayerMatch` (R5, R6): `match_id`, `tournament_id`, `draw_id`, `draw_name`, `round`, `match_date`, `duration_min`, `side`, `player`, `partner`, `opponents`, `won`, `status`, `games`, `notes`
+- `EventMatches` (R5, R6): `tournament_id`, `event_code`, `event_id`, `matches`, `totals_agree`, `notes`
 
 BWF raw field names for bio/ranking are unconfirmed; models are the package's own schema and parsers map onto them.
 
 ## 6. Testing strategy
 
-pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live smoke tests are marked `@pytest.mark.live` and excluded by default (`pytest -m live` to run). `python scripts/save_test_results.py` runs both suites and saves the full output to `test_results/latest.txt` (overwritten every iteration; `--no-live` skips the live suite). Required edge cases: exact, fuzzy, ambiguous, not found, empty input, special characters, missing fields, unranked player. Iteration 5 adds `tests/test_tournaments.py` and two live tests. `tests/test_notebook.py` guards the committed notebook: valid, every code cell executed without errors, only uses the package, shows the main result, contains no secrets or local paths.
+pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live smoke tests are marked `@pytest.mark.live` and excluded by default (`pytest -m live` to run). `python scripts/save_test_results.py` runs both suites and saves the full output to `test_results/latest.txt` (overwritten every iteration; `--no-live` skips the live suite). Required edge cases: exact, fuzzy, ambiguous, not found, empty input, special characters, missing fields, unranked player. Iteration 5 adds `tests/test_tournaments.py` and two live tests; Iteration 6 adds `tests/test_matches.py` (real fixtures for singles, doubles, mixed, team events, group stage, qualification, retirement, walkover and bye) and two live tests. `tests/test_notebook.py` guards the committed notebook: valid, every code cell executed without errors, only uses the package, shows the main result, contains no secrets or local paths.
 
 ## 7. Iteration plan
 
@@ -152,7 +166,7 @@ pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live sm
 | 3 | R3 ranking + tests | Done |
 | 4 | Notebook, README, full regression | Done |
 | 5 | R4: tournaments in a one-year window and the result per event | Done |
-| 6 | R5 + R6: partners, opponents, per-game scores; reconciliation with the R4 totals | Planned |
+| 6 | R5 + R6: partners, opponents, per-game scores; reconciliation with the R4 totals | Done |
 | 7 | R7: SQLite storage (re-runnable) and CSV export | Planned |
 | 8 | End-to-end `download_player_history`, notebook, README, full regression | Planned |
 
@@ -164,7 +178,7 @@ pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live sm
 3. ~~Bio field names~~ **Resolved in Iteration 2** (see `vue-player-summary`). **Ranking field names** also **resolved in Iteration 3** (see the ranking endpoints; real responses are saved as fixtures).
 4. ~~Height format~~ **Resolved:** centimetres, returned as `height_cm` (float).
 5. **Which ranking event (awaiting your decision).** Implemented as: the first event the site lists, with the others in `other_events` and selectable via `event_id`. Confirm this is what you want, or whether the result should contain all events (2 more requests per extra event).
-6. **Team events and group stages (open, Iteration 6).** For team events (Sudirman Cup, Thomas & Uber Cup) the tournament list gives `type_id` 1, event id 1, and no position (`N/A`). The shape of their match responses, and of finals group stages (Christie's World Tour Finals 2025 shows position `R3`, 0 wins and 3 losses), is not verified. Iteration 6 probes them and stores what is found in a fixture; anything not understood is flagged, not guessed.
+6. ~~Team events and group stages~~ **Resolved in Iteration 6.** Team events and group stages use the same match shape as ordinary events (Thomas Cup ties, a finals group stage, qualification plus main draw, all fixtures). New unusual cases found and handled: a draw whose matches are an object instead of a list, byes, and start times that must come from `match_start_time_details`. Not seen in the data: a disqualification (`score_status` 3) and a match still in progress (`match_state` other than `F`); both are handled defensively (status `unknown` or no usable winner, with a note) but untested against real data.
 7. **Para-badminton (open, limitation).** Every request sends `isPara=false`, so a para player's tournaments are not covered. Supporting them needs the para variants of the same endpoints; not planned.
 8. **Window rule (decided by the assistant, please confirm).** A tournament counts when its dates overlap the window, not only when it starts inside it. Effect on the default window (2025-09-21 to 2026-09-21): China Masters 2025 (16-21 Sep 2025) is included. Say so if you want start-date-in-window instead.
 
@@ -198,14 +212,14 @@ Added 2026-09-21. Given one player, download the tournaments they entered in the
 
 Player-centric, using the endpoints the site's own player "Tournaments" tab uses: `vue-player-tournaments` (tournaments and results, per calendar year) then `vue-player-tmt-matches` (matches with partners, opponents and per-game points, one request per event). About 25-40 requests per player, 1-2 minutes at the 2.5 s pace, and cached afterwards. A tournament-centric route (every match of every tournament, once) would be cheaper for many players, but `vue-tournament-matches` did not answer with the parameters tried, and it is not needed for one player.
 
-**Built-in cross-check.** Every event in the tournament list carries the site's own totals (`match_win/lose`, `game_win/lose`, points). The matches parsed in Iteration 6 must add up to them; a mismatch is reported, so the parser is validated on live data rather than trusted.
+**Built-in cross-check.** Every event in the tournament list carries the site's own totals (`match_win/lose`, `game_win/lose`, points). The parsed matches must add up to them (`check_totals`); a mismatch is reported, so the parser is validated on live data rather than trusted. During Iteration 6 this held for 72 real events (215 matches) of five players; 29 of those events are saved as fixtures and re-checked by every offline run.
 
 ### Planned data model (SQLite, `data/bwf_history.sqlite`, git-ignored; implemented in Iteration 7)
 
 - `players(player_id PK, name, slug, country)`: the subject, partners and opponents
 - `tournaments(tournament_id PK, name, category, start_date, end_date, location, country, type_id)`
 - `results(player_id, tournament_id, event_code, event_id, position, matches_won, matches_lost, games_won, games_lost, points_for, points_against)`, PK (player, tournament, event)
-- `matches(match_id PK, tournament_id, event_code, draw_name, round, match_date, duration_min, status, winner_side)`
+- `matches(match_id PK, tournament_id, event_code, draw_name, round, match_date, duration_min, status, winner_side)`; `status` is one of played, bye, walkover, retired, disqualified, unknown
 - `match_players(match_id, player_id, side 1|2, slot 1|2)`: who is on which side, so it answers "played with" and "played against"
 - `games(match_id, game_no, side1_points, side2_points)`
 - View `player_match_view`: from the subject's side, `partner`, `opponent_1`, `opponent_2`, `games` ("21-17, 21-19"), `won`
@@ -213,4 +227,4 @@ Player-centric, using the endpoints the site's own player "Tournaments" tab uses
 
 ### Status
 
-R4 (Iteration 5) is implemented and tested (`bwf_player/tournaments.py`, section 4). R5-R7 follow in Iterations 6-8 (section 7).
+R4 (Iteration 5) and R5-R6 (Iteration 6) are implemented and tested (`bwf_player/tournaments.py`, `bwf_player/matches.py`, section 4). R7 (storage) and the end-to-end download follow in Iterations 7-8 (section 7).

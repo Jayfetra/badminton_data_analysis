@@ -1,0 +1,385 @@
+{
+ "results": [
+  {
+   "tournament_id": 5527,
+   "date": "01  - 06 September",
+   "location": "Pontianak, Indonesia",
+   "tmt_url": "https://bwfbadminton.com/tournament/5527/polytron-pontianak-indonesia-masters-2026",
+   "tournament_model": {
+    "id": 5527,
+    "name": "POLYTRON Pontianak Indonesia Masters 2026",
+    "slug": "polytron-pontianak-indonesia-masters-2026",
+    "start_date": "2026-09-01 00:00:00",
+    "end_date": "2026-09-06 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 27,
+    "tournament_series_id": 138,
+    "country_model": {
+     "name": "Indonesia",
+     "code_iso3": "INA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 27571,
+     "name": "XD",
+     "score_player": 195,
+     "score_opponent": 192,
+     "match_count": 4,
+     "match_win": 3,
+     "match_lose": 1,
+     "match_percent": 75,
+     "game_count": 11,
+     "game_win": 6,
+     "game_lose": 5,
+     "game_percent": 54.54545454545454,
+     "points_percent": 50.3875968992248,
+     "position": "3rd"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5577,
+   "date": "25  - 30 August",
+   "location": "Pontianak, Indonesia",
+   "tmt_url": "https://bwfbadminton.com/tournament/5577/polytron-pontianak-international-challenge-2026",
+   "tournament_model": {
+    "id": 5577,
+    "name": "POLYTRON Pontianak International Challenge 2026",
+    "slug": "polytron-pontianak-international-challenge-2026",
+    "start_date": "2026-08-25 00:00:00",
+    "end_date": "2026-08-30 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 5,
+    "tournament_series_id": 650,
+    "country_model": {
+     "name": "Indonesia",
+     "code_iso3": "INA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 27871,
+     "name": "XD",
+     "score_player": 278,
+     "score_opponent": 228,
+     "match_count": 5,
+     "match_win": 5,
+     "match_lose": 0,
+     "match_percent": 100,
+     "game_count": 14,
+     "game_win": 10,
+     "game_lose": 4,
+     "game_percent": 71.42857142857143,
+     "points_percent": 54.9407114624506,
+     "position": "1st"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5514,
+   "date": "28 July - 02 August",
+   "location": "Taipei, Chinese Taipei",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5514/yonex-taipei-open-2026/",
+   "tournament_model": {
+    "id": 5514,
+    "name": "YONEX Taipei Open 2026",
+    "slug": "yonex-taipei-open-2026",
+    "start_date": "2026-07-28 00:00:00",
+    "end_date": "2026-08-02 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 26,
+    "tournament_series_id": 34,
+    "country_model": {
+     "name": "Chinese Taipei",
+     "code_iso3": "TWN"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 27449,
+     "name": "XD",
+     "score_player": 38,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 47.5,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5528,
+   "date": "02  - 07 June",
+   "location": "Jakarta, Indonesia",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5528/polytron-indonesia-open-2026/",
+   "tournament_model": {
+    "id": 5528,
+    "name": "POLYTRON Indonesia Open 2026",
+    "slug": "polytron-indonesia-open-2026",
+    "start_date": "2026-06-02 00:00:00",
+    "end_date": "2026-06-07 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 23,
+    "tournament_series_id": 64,
+    "country_model": {
+     "name": "Indonesia",
+     "code_iso3": "INA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 27576,
+     "name": "XD",
+     "score_player": 19,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 31.147540983606557,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5229,
+   "date": "19  - 24 May",
+   "location": "Kuala Lumpur, Malaysia",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5229/perodua-malaysia-masters-2026/",
+   "tournament_model": {
+    "id": 5229,
+    "name": "PERODUA Malaysia Masters 2026",
+    "slug": "perodua-malaysia-masters-2026",
+    "start_date": "2026-05-19 00:00:00",
+    "end_date": "2026-05-24 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 25,
+    "tournament_series_id": 50,
+    "country_model": {
+     "name": "Malaysia",
+     "code_iso3": "MYS"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25717,
+     "name": "XD",
+     "score_player": 38,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 47.5,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5230,
+   "date": "12  - 17 May",
+   "location": "Patumwan, Thailand",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5230/toyota-thailand-open-2026/",
+   "tournament_model": {
+    "id": 5230,
+    "name": "TOYOTA Thailand Open 2026",
+    "slug": "toyota-thailand-open-2026",
+    "start_date": "2026-05-12 00:00:00",
+    "end_date": "2026-05-17 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 25,
+    "tournament_series_id": 473,
+    "country_model": {
+     "name": "Thailand",
+     "code_iso3": "THA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25723,
+     "name": "XD",
+     "score_player": 72,
+     "score_opponent": 73,
+     "match_count": 2,
+     "match_win": 1,
+     "match_lose": 1,
+     "match_percent": 50,
+     "game_count": 4,
+     "game_win": 2,
+     "game_lose": 2,
+     "game_percent": 50,
+     "points_percent": 49.6551724137931,
+     "position": "R16"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5270,
+   "date": "17  - 22 March",
+   "location": "Orléans, France",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5270/orleans-masters-badminton-2026-presented-by-victor/",
+   "tournament_model": {
+    "id": 5270,
+    "name": "Orleans Masters Badminton 2026 presented by VICTOR",
+    "slug": "orleans-masters-badminton-2026-presented-by-victor",
+    "start_date": "2026-03-17 00:00:00",
+    "end_date": "2026-03-22 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 26,
+    "tournament_series_id": 12,
+    "country_model": {
+     "name": "France",
+     "code_iso3": "FRA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25897,
+     "name": "XD",
+     "score_player": 97,
+     "score_opponent": 93,
+     "match_count": 2,
+     "match_win": 1,
+     "match_lose": 1,
+     "match_percent": 50,
+     "game_count": 5,
+     "game_win": 3,
+     "game_lose": 2,
+     "game_percent": 60,
+     "points_percent": 51.05263157894737,
+     "position": "R16"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5209,
+   "date": "10  - 15 March",
+   "location": "Basel, Switzerland",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5209/yonex-swiss-open-2026/",
+   "tournament_model": {
+    "id": 5209,
+    "name": "YONEX Swiss Open 2026",
+    "slug": "yonex-swiss-open-2026",
+    "start_date": "2026-03-10 00:00:00",
+    "end_date": "2026-03-15 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 26,
+    "tournament_series_id": 256,
+    "country_model": {
+     "name": "Switzerland",
+     "code_iso3": "CHE"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25613,
+     "name": "XD",
+     "score_player": 32,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 43.24324324324324,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5226,
+   "date": "27 January - 01 February",
+   "location": "Bangkok, Thailand",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5226/thailand-masters-2026/",
+   "tournament_model": {
+    "id": 5226,
+    "name": "Thailand Masters 2026",
+    "slug": "thailand-masters-2026",
+    "start_date": "2026-01-27 00:00:00",
+    "end_date": "2026-02-01 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 26,
+    "tournament_series_id": 1,
+    "country_model": {
+     "name": "Thailand",
+     "code_iso3": "THA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 25703,
+     "name": "XD",
+     "score_player": 25,
+     "score_opponent": 42,
+     "match_count": 1,
+     "match_win": 0,
+     "match_lose": 1,
+     "match_percent": 0,
+     "game_count": 2,
+     "game_win": 0,
+     "game_lose": 2,
+     "game_percent": 0,
+     "points_percent": 37.3134328358209,
+     "position": "R32"
+    }
+   ]
+  },
+  {
+   "tournament_id": 5529,
+   "date": "20  - 25 January",
+   "location": "Jakarta, Indonesia",
+   "tmt_url": "https://bwfworldtour.bwfbadminton.com/tournament/5529/daihatsu-indonesia-masters-2026/",
+   "tournament_model": {
+    "id": 5529,
+    "name": "DAIHATSU Indonesia Masters 2026",
+    "slug": "daihatsu-indonesia-masters-2026",
+    "start_date": "2026-01-20 00:00:00",
+    "end_date": "2026-01-25 00:00:00",
+    "type_id": 0,
+    "tournament_category_id": 25,
+    "tournament_series_id": 130,
+    "country_model": {
+     "name": "Indonesia",
+     "code_iso3": "INA"
+    }
+   },
+   "draws": [
+    {
+     "event_id": 27581,
+     "name": "XD",
+     "score_player": 84,
+     "score_opponent": 79,
+     "match_count": 2,
+     "match_win": 1,
+     "match_lose": 1,
+     "match_percent": 50,
+     "game_count": 5,
+     "game_win": 3,
+     "game_lose": 2,
+     "game_percent": 60,
+     "points_percent": 51.533742331288344,
+     "position": "R16"
+    }
+   ]
+  }
+ ],
+ "drawCount": 1
+}
