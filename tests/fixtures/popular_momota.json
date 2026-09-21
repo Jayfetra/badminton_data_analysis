@@ -1,0 +1,42 @@
+{
+ "results": [
+  {
+   "id": "89785",
+   "slug": "kento-momota",
+   "name_display": "Kento MOMOTA",
+   "name_display_bold": null,
+   "name_display_break": "<span class=\"name-1\">Kento</span><br><span class=\"name-2\">MOMOTA</span>",
+   "name_type_id": 0,
+   "avatar": {
+    "url_thumbnail": "https://extranet.bwfbadminton.com/docs/players/89785/profile/20220630_1705_MalaysiaOpen2022_BPES7595.jpg",
+    "url_medium_image": "https://extranet.bwfbadminton.com/docs/players/89785/profile/20220630_1705_MalaysiaOpen2022_BPES7595.jpg",
+    "url_large_image": "https://extranet.bwfbadminton.com/docs/players/89785/profile/20220630_1705_MalaysiaOpen2022_BPES7595.jpg",
+    "url_original": "https://extranet.bwfbadminton.com/docs/players/89785/profile/20220630_1705_MalaysiaOpen2022_BPES7595.jpg",
+    "name": "20220630_1705_MalaysiaOpen2022_BPES7595.jpg",
+    "file_name": "20220630_1705_MalaysiaOpen2022_BPES7595.jpg",
+    "url_cloudinary": "https://img.bwfbadminton.com/image/upload/t_96_player_profile/v1658823118/assets/players/thumbnail/89785.png"
+   },
+   "country_model": {
+    "id": 3,
+    "name": "Japan",
+    "flag_name_svg": "japan.svg",
+    "code_iso3": "JPN"
+   },
+   "award_year": null
+  }
+ ],
+ "pagination": {
+  "current_page": 1,
+  "first_page_url": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players?page=1",
+  "from": 1,
+  "last_page": 1,
+  "last_page_url": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players?page=1",
+  "next_page_url": null,
+  "path": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players",
+  "per_page": 30,
+  "prev_page_url": null,
+  "to": 1,
+  "total": 1
+ },
+ "drawCount": null
+}

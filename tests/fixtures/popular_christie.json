@@ -1,0 +1,80 @@
+{
+ "results": [
+  {
+   "id": "51260",
+   "slug": "christie-xu",
+   "name_display": "Christie XU",
+   "name_display_bold": null,
+   "name_display_break": "<span class=\"name-1\">Christie</span><br><span class=\"name-2\">XU</span>",
+   "name_type_id": 0,
+   "avatar": {
+    "url_original": "https://extranet.bwfbadminton.com/images/profile_female.jpg",
+    "url_cloudinary": "https://extranet.bwfbadminton.com/images/profile_female.jpg"
+   },
+   "country_model": {
+    "id": 18,
+    "name": "Canada",
+    "flag_name_svg": "canada.svg",
+    "code_iso3": "CAN"
+   },
+   "award_year": null
+  },
+  {
+   "id": "73442",
+   "slug": "jonatan-christie",
+   "name_display": "Jonatan CHRISTIE",
+   "name_display_bold": null,
+   "name_display_break": "<span class=\"name-1\">Jonatan</span><br><span class=\"name-2\">CHRISTIE</span>",
+   "name_type_id": 0,
+   "avatar": {
+    "url_thumbnail": "https://extranet.bwfbadminton.com/docs/players/73442/profile/20230916_1933_HongKongOpen2023_BPRS2-4.jpg",
+    "url_medium_image": "https://extranet.bwfbadminton.com/docs/players/73442/profile/20230916_1933_HongKongOpen2023_BPRS2-4.jpg",
+    "url_large_image": "https://extranet.bwfbadminton.com/docs/players/73442/profile/20230916_1933_HongKongOpen2023_BPRS2-4.jpg",
+    "url_original": "https://extranet.bwfbadminton.com/docs/players/73442/profile/20230916_1933_HongKongOpen2023_BPRS2-4.jpg",
+    "name": "20230916_1933_HongKongOpen2023_BPRS2-4.jpg",
+    "file_name": "20230916_1933_HongKongOpen2023_BPRS2-4.jpg",
+    "url_cloudinary": "https://img.bwfbadminton.com/image/upload/t_96_player_profile/v1697434451/assets/players/thumbnail/73442.png"
+   },
+   "country_model": {
+    "id": 5,
+    "name": "Indonesia",
+    "flag_name_svg": "indonesia.svg",
+    "code_iso3": "INA"
+   },
+   "award_year": null
+  },
+  {
+   "id": "75315",
+   "slug": "trehan-christie",
+   "name_display": "Trehan CHRISTIE",
+   "name_display_bold": null,
+   "name_display_break": "<span class=\"name-1\">Trehan</span><br><span class=\"name-2\">CHRISTIE</span>",
+   "name_type_id": 0,
+   "avatar": {
+    "url_original": "https://extranet.bwfbadminton.com/images/profile_male.jpg",
+    "url_cloudinary": "https://extranet.bwfbadminton.com/images/profile_male.jpg"
+   },
+   "country_model": {
+    "id": 13,
+    "name": "England",
+    "flag_name_svg": "england.svg",
+    "code_iso3": "GBR"
+   },
+   "award_year": null
+  }
+ ],
+ "pagination": {
+  "current_page": 1,
+  "first_page_url": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players?page=1",
+  "from": 1,
+  "last_page": 1,
+  "last_page_url": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players?page=1",
+  "next_page_url": null,
+  "path": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players",
+  "per_page": 30,
+  "prev_page_url": null,
+  "to": 3,
+  "total": 3
+ },
+ "drawCount": null
+}

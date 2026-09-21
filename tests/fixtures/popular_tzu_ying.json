@@ -1,0 +1,61 @@
+{
+ "results": [
+  {
+   "id": "77780",
+   "slug": "liao-tzu-ying",
+   "name_display": "LIAO Tzu Ying",
+   "name_display_bold": null,
+   "name_display_break": "<span class=\"name-2\">LIAO</span><br><span class=\"name-1\">Tzu Ying</span>",
+   "name_type_id": 1,
+   "avatar": {
+    "url_original": "https://extranet.bwfbadminton.com/images/profile_female.jpg",
+    "url_cloudinary": "https://extranet.bwfbadminton.com/images/profile_female.jpg"
+   },
+   "country_model": {
+    "id": 8,
+    "name": "Chinese Taipei",
+    "flag_name_svg": "chinese-taipei.svg",
+    "code_iso3": "TWN"
+   },
+   "award_year": null
+  },
+  {
+   "id": "61427",
+   "slug": "tzu-ying-tai",
+   "name_display": "Tzu Ying TAI",
+   "name_display_bold": null,
+   "name_display_break": "<span class=\"name-2\">TAI</span><br><span class=\"name-1\">Tzu Ying</span>",
+   "name_type_id": 1,
+   "avatar": {
+    "url_thumbnail": "https://extranet.bwfbadminton.com/docs/players/61427/profile/20230908_1313_ChinaOpen2023_BPRS0660.jpg",
+    "url_medium_image": "https://extranet.bwfbadminton.com/docs/players/61427/profile/20230908_1313_ChinaOpen2023_BPRS0660.jpg",
+    "url_large_image": "https://extranet.bwfbadminton.com/docs/players/61427/profile/20230908_1313_ChinaOpen2023_BPRS0660.jpg",
+    "url_original": "https://extranet.bwfbadminton.com/docs/players/61427/profile/20230908_1313_ChinaOpen2023_BPRS0660.jpg",
+    "name": "20230908_1313_ChinaOpen2023_BPRS0660.jpg",
+    "file_name": "20230908_1313_ChinaOpen2023_BPRS0660.jpg",
+    "url_cloudinary": "https://img.bwfbadminton.com/image/upload/t_96_player_profile/v1697439785/assets/players/thumbnail/61427.png"
+   },
+   "country_model": {
+    "id": 8,
+    "name": "Chinese Taipei",
+    "flag_name_svg": "chinese-taipei.svg",
+    "code_iso3": "TWN"
+   },
+   "award_year": null
+  }
+ ],
+ "pagination": {
+  "current_page": 1,
+  "first_page_url": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players?page=1",
+  "from": 1,
+  "last_page": 1,
+  "last_page_url": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players?page=1",
+  "next_page_url": null,
+  "path": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players",
+  "per_page": 30,
+  "prev_page_url": null,
+  "to": 2,
+  "total": 2
+ },
+ "drawCount": null
+}

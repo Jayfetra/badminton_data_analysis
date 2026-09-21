@@ -1,6 +1,6 @@
 # PRD Master — BWF Player Lookup
 
-**Version:** 0.1 (Iteration 0) · **Last updated:** 2026-09-21
+**Version:** 0.2 (Iteration 1: R1 search) · **Last updated:** 2026-09-21
 
 Single source of truth for requirements, architecture decisions, data schema and open questions.
 
@@ -29,8 +29,8 @@ Method: `curl` with a browser User-Agent, inspecting page source and the inline 
 
 | Endpoint | Params | Use | Status |
 |----------|--------|-----|--------|
-| `vue-popular-players` | `searchKey`, `activeTab`, `page` | R1 search. Returns `results[]` with `id`, `slug`, `name_display`, `country_model`, plus `pagination`. Confirmed live for Jonatan Christie (`id=73442`, `slug=jonatan-christie`). | Response confirmed |
-| `vue-h2h-players` | `searchKey`, `drawCount`, `drawTab` | Possible broader player autocomplete for R1. | Not yet tested |
+| `vue-popular-players` | `searchKey`, `activeTab=1`, `page` | R1 server search. Returns `results[]` (`id`, `slug`, `name_display`, `country_model`, ...) and `pagination` (30 per page, `next_page_url`). **Strict, case-insensitive substring match on `name_display`**: "cristie" returns 0, "tai tzu" returns 0 (site stores "Tzu Ying TAI"). Empty `searchKey` pages through all players. `activeTab=0` returns HTTP 500. | Used (Iteration 1) |
+| `vue-h2h-players` | `searchKey` (ignored), `drawCount`, `drawTab` | R1 index. Returns **every** player as `{value: id, text: "Given FAMILY"}` in one response (3,429 entries, ~130 KB), regardless of `searchKey`. No slug or country. **Incomplete**: e.g. Kento MOMOTA and Tai Tzu Ying are absent. | Used (Iteration 1) |
 | `vue-player-bio` | `playerId`, `activeTab` | R2 details. | Response shape **not yet inspected** |
 | `vue-player-ranking-events` | `playerId`, `activeTab`, `isPara` | R3: lists ranking events; the first is the default. | Not yet tested |
 | `vue-player-ranking-current` | `rankingEvent`, `playerId`, `isPara` | R3 current rank. | Not yet tested |
@@ -51,7 +51,7 @@ Method: `curl` with a browser User-Agent, inspecting page source and the inline 
    - Decision (user, 2026-09-21): plain `requests` client, no headless-browser fallback. The risk is documented, not engineered around. Reconsider if blocks prove persistent.
 2. **ToS unverified (medium).** See section 2.
 3. **Unofficial API (medium).** Field names and endpoints may change. Parsers are isolated in their own modules and tested against saved fixtures so drift is easy to spot.
-4. **Live testing constraint.** Because the test IP is blocked, live smoke tests may need to run from the user's own network.
+4. **Live testing.** The block observed in Iteration 0 lifted within a day. Iteration 1 live smoke tests (about 5 requests, 2.5 s apart, custom `Mozilla/5.0 (compatible; bwf-player-lookup/...)` User-Agent) passed with no block. Run them sparingly.
 
 ## 4. Architecture
 
@@ -63,6 +63,7 @@ bwf_player/
   exceptions.py   BwfClientError, BlockedByCloudflareError, InvalidInputError
   models.py       PlayerCandidate, SearchResult, PlayerProfile, PlayerRanking, PlayerResult
   http_client.py  session bootstrap, rate limit, retry/backoff, disk cache, block detection
+  names.py        query sanitizing, name normalization, slug derivation
   search.py       R1 (Iteration 1)
   profile.py      R2 (Iteration 2)
   ranking.py      R3 (Iteration 3)
@@ -76,8 +77,16 @@ tests/            pytest; offline unit tests on saved fixtures; @pytest.mark.liv
 
 ### Design notes
 
-- **Matching (R1).** Normalize (NFKD accent strip, casefold, whitespace collapse) then score with rapidfuzz. `token_sort_ratio` is order-independent, so reversed names need no special code; ratio scoring absorbs minor typos. Default threshold 85, ambiguity margin 5 (top candidates within the margin of each other -> `ambiguous`), both configurable.
-- **Input safety.** Names are validated (non-empty, length-bounded, control characters stripped) and passed to the API only via `requests` `params` (encoded), never string-concatenated into URLs.
+- **Search algorithm (R1, implemented).**
+  1. *Sanitize* (`names.sanitize_query`): NFKC, control characters to spaces, whitespace collapsed, max 100 chars. Bad input (non-text, empty, too long, no letters/digits) returns a `not_found` result with a message; it never raises.
+  2. *Normalize* (`names.normalize_name`): casefold, strip accents (plus o-slash, ae, ss, l-stroke, d-stroke...), punctuation to spaces.
+  3. *Index stage*: fetch `vue-h2h-players` once (cached 7 days), score every name locally.
+  4. *Server stage*: only if no single index name scores 100, query `vue-popular-players` with the two longest query tokens (max 2 pages each), stopping as soon as a confident match exists. Results are merged by player id; server data (real slug, country) wins.
+  5. *Decide*: keep candidates scoring at least the threshold (default 85). None -> `not_found` (message names the closest candidate). One, or a lead of at least the margin (default 5) -> `found`. Otherwise -> `ambiguous` with up to 5 ranked candidates.
+- **Scoring**: `max(token_sort_ratio, 0.9 * token_set_ratio)` from rapidfuzz on normalized names. Same words in any order = 100 (so reversed names need no special code); "jonathan cristie" vs "Jonatan CHRISTIE" = 94; a partial name ("christie", "lee") = a flat 90 for every player containing it, so partial queries are `ambiguous` by design. `WRatio` was rejected because it scores shorter names higher for the same partial query.
+- **Profile URL**: `https://bwfbadminton.com/player/{id}/{slug}`. The slug comes from the server when available, otherwise it is derived from the name (`Jonatan CHRISTIE` -> `jonatan-christie`). The id is authoritative: the site 302-redirects `/player/{id}/` and `/player/{id}/<any-slug>` to the canonical URL.
+- **Request economy**: a repeat lookup of a known player costs zero requests (index + results cached). A first-ever lookup costs one session bootstrap plus the index; players missing from the index cost 1-2 more.
+- **Input safety.** Names are sanitized as above and passed to the API only via `requests` `params` (encoded), never string-concatenated into URLs. Server queries use only the normalized (alphanumeric) tokens. Player ids/slugs are URL-quoted when building profile URLs.
 - **No secrets** are used or stored. The session cookie is fetched at runtime and kept in memory.
 
 ## 5. Data schema (v0.1)
@@ -100,15 +109,16 @@ pytest. Offline unit tests use saved JSON fixtures in `tests/fixtures/`. Live sm
 
 | Iteration | Scope | Status |
 |-----------|-------|--------|
-| 0 | Scaffold, investigation, PRD v0.1, first commit | Done (local; remote pending gh auth) |
-| 1 | R1 search + tests | Pending |
+| 0 | Scaffold, investigation, PRD v0.1, first commit | Done |
+| 1 | R1 search + tests | Done |
 | 2 | R2 profile + tests | Pending |
 | 3 | R3 ranking + tests | Pending |
 | 4 | Notebook, README, full regression | Pending |
 
 ## 8. Open questions
 
-1. **Search coverage (Iteration 1, first task).** Does `vue-popular-players` search the whole player database or only a "popular" subset? Does its `searchKey` tolerate typos (e.g. "jonathan cristie"), or is it strict substring? Compare with `vue-h2h-players`. If server-side search is strict, fall back to fetching and caching a full player index and matching locally.
+1. ~~Search coverage~~ **Resolved in Iteration 1.** `vue-popular-players` searches the whole database but is a strict substring match; `vue-h2h-players` is a complete-looking but incomplete index. Hybrid design in section 4.
+1a. **Known limitations of R1.** (a) A typo inside a *single-word* partial name ("cristie", "jonathan") is not matched; typo tolerance applies to full names. (b) A typo'd query for a player absent from the index (Momota, Tai Tzu Ying, Carolina Marin) will not be found, because the server search is strict. (c) If a typo'd query closely resembles a different indexed player, that player can be returned as `found`. Mitigation if any of these matter: page the full player list once (about 100+ requests at 30 per page; not done, given the block risk).
 2. **ToS.** Read `/terms-and-conditions/` from an unblocked network and record the scraping stance here.
 3. **Bio and ranking field names** (Iterations 2 and 3): capture real responses as fixtures first.
 4. **Height format.** Units and representation on the site (cm? string?). Decide after inspecting bio JSON.

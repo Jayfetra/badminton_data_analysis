@@ -1,0 +1,17 @@
+{
+ "results": [],
+ "pagination": {
+  "current_page": 1,
+  "first_page_url": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players?page=1",
+  "from": null,
+  "last_page": 1,
+  "last_page_url": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players?page=1",
+  "next_page_url": null,
+  "path": "https://extranet-lv.bwfbadminton.com/api/vue-popular-players",
+  "per_page": 30,
+  "prev_page_url": null,
+  "to": null,
+  "total": 0
+ },
+ "drawCount": null
+}
