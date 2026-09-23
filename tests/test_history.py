@@ -57,7 +57,7 @@ def test_summary_of_christies_year(christie: Any) -> None:
 def test_the_database_and_csv_files_are_written_where_configured(christie: Any) -> None:
     summary, _, tmp_path = christie
     assert summary.database == str(tmp_path / "data" / "h.sqlite")
-    assert set(summary.csv_files) == {"results.csv", "matches.csv", "games.csv"}
+    assert set(summary.csv_files) == {"results.csv", "matches.csv", "games.csv", "match_stats.csv", "game_stats.csv", "rallies.csv"}
     assert all(Path(p).is_file() and Path(p).parent == tmp_path / "data" / "csv" for p in summary.csv_files.values())
     counts = {t: len(rows) for t, rows in _dump(tmp_path / "data" / "h.sqlite").items()}
     assert counts["tournaments"] == 19 and counts["results"] == 19 and counts["matches"] == 58 and counts["games"] == 138
@@ -224,7 +224,7 @@ def test_a_block_part_way_keeps_what_was_saved_and_a_rerun_completes_it(tmp_path
         download_player_history(73442, _client(tmp_path, _BlocksAfter), today=TODAY, export=False)
     partial = _dump(tmp_path / "data" / "h.sqlite")
     assert len(partial["tournaments"]) == 19 and len(partial["results"]) == 19  # saved before the matches
-    events_saved = {m[1] for m in partial["matches"]}
+    events_saved = {m[2] for m in partial["matches"]}  # column 3 is the tournament id
     assert 0 < len(partial["matches"]) < 58 and len(events_saved) == 4
 
     complete = download_player_history(73442, _client(tmp_path), today=TODAY, export=False)

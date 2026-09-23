@@ -240,3 +240,57 @@ def test_live_a_match_that_does_not_exist_is_not_found(client: BwfHttpClient) ->
 
     with pytest.raises(BwfNotFoundError):
         get_match_details(5515, 99999, client)
+
+
+def _store_details_of(client: BwfHttpClient, player: str, tmp_path: Path, **window: object) -> tuple[object, list, Path]:
+    """Save one tournament's matches and their details from the real site; returns (store counts, targets, csv dir)."""
+    from bwf_player import details_targets, get_match_details, get_matches, get_tournaments
+    from bwf_player.store import HistoryStore
+
+    history = get_tournaments(player, client, with_categories=False, **window)
+    assert len({e.tournament_id for e in history.entries}) == 1, [e.name for e in history.entries]
+    targets = []
+    with HistoryStore(tmp_path / "details.sqlite") as store:
+        store.save_tournaments(history, player_name="x")
+        for entry in history.entries:  # one entry per event entered
+            event = get_matches(player, entry, client)
+            store.save_matches(event)
+            for match in details_targets(event.matches):
+                targets.append(match)
+                store.save_match_details(get_match_details(match.tournament_id, match.match_code, client, match=match))
+        rows = {
+            "counts": store.counts(),
+            "checks": store.connection.execute("SELECT DISTINCT checks_ok FROM match_stats").fetchall(),
+            "points": store.connection.execute("SELECT SUM(total_points_played) FROM game_stats").fetchone()[0],
+            "tracked": store.connection.execute("SELECT DISTINCT tracked FROM match_stats").fetchall(),
+            "null_stats": store.connection.execute(
+                "SELECT COUNT(*) FROM match_stats WHERE side1_rallies_won IS NOT NULL OR side1_consecutive_points IS NOT NULL"
+            ).fetchone()[0],
+        }
+        files = store.export_csv(tmp_path / "csv")
+    return rows, targets, files["rallies.csv"].parent
+
+
+def test_live_game_details_are_stored_and_exported(client: BwfHttpClient, tmp_path: Path) -> None:
+    """LI-NING China Masters 2026 (5-day World Tour event): rally data and statistics are there."""
+    import csv
+    from datetime import date
+
+    rows, targets, folder = _store_details_of(client, "73442", tmp_path, since=date(2026, 9, 1), until=date(2026, 9, 6))
+    counts = rows["counts"]
+    assert counts["match_stats"] == len(targets) == 2 and counts["game_stats"] == sum(len(m.games) for m in targets)
+    assert rows["checks"] == [(1,)] and rows["tracked"] == [(1,)]
+    assert counts["rallies"] == rows["points"] > 0
+    with (folder / "rallies.csv").open(encoding="utf-8-sig", newline="") as handle:
+        assert len(list(csv.DictReader(handle))) == counts["rallies"]
+
+
+def test_live_untracked_details_are_stored_as_null(client: BwfHttpClient, tmp_path: Path) -> None:
+    """Telangana India International Challenge 2025 (Aadhya SHINE): the site gives only the game scores."""
+    from datetime import date
+
+    rows, targets, _ = _store_details_of(client, "89438", tmp_path, since=date(2025, 11, 4), until=date(2025, 11, 9))
+    counts = rows["counts"]
+    assert counts["match_stats"] == len(targets) == 2 and counts["rallies"] == 0
+    assert rows["tracked"] == [(0,)] and rows["null_stats"] == 0  # NULL, not zeros
+    assert rows["checks"] == [(1,)]  # the games still agree with the player's page

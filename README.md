@@ -75,7 +75,7 @@ In doubles each match also names the partner and both opponents:
 
 ### The saved data
 
-`data/bwf_history.sqlite` (git-ignored) has the tables `players`, `tournaments`, `results`, `matches`, `match_players` and `games`, and the view `player_match_view` with one row per player and match:
+`data/bwf_history.sqlite` (git-ignored) has the tables `players`, `tournaments`, `results`, `matches`, `match_players` and `games`, the game-detail tables `match_stats`, `game_stats` and `rallies`, and views with one row per player and match (`player_match_view`, `player_match_stats_view`), per game (`player_game_view`) and per rally (`player_rally_view`):
 
 ```python
 import sqlite3
@@ -92,6 +92,9 @@ con.execute("""SELECT match_date, tournament, round, won, partner, opponent_1, o
 | `results.csv` | event entered | player, tournament, category, dates, location, event (`MS`, `WD`, ...), `position`, matches/games/points won and lost |
 | `matches.csv` | match | player, tournament, event, round, date, `status`, `won` (1/0/empty), partner, `opponent_1`, `opponent_2`, `games` ("21-17, 21-19", the player's points first) |
 | `games.csv` | game | player, tournament, round, match, `game_no`, `player_points`, `opponent_points` |
+| `match_stats.csv` | match with saved details | the Match tab: `player_games_won`, `opponent_games_won`, and for the player and the opponent the most consecutive points, game points, rallies played and won (plus the site's tracking fields), start time, venue, `tracked`, `checks_ok` |
+| `game_stats.csv` | game with saved details | the Game tabs: points, `total_points_played`, and the same statistics per game |
+| `rallies.csv` | rally | the score after every rally (`player_points`, `opponent_points`, `rally_won_by_player`) |
 
 `status` is `played`, `bye` (the player advanced without playing; the site counts it as a match won, `won` is empty), `walkover`, `retired` (the partial game is kept) or `disqualified`. Filter `status = 'played'` for matches that were really played. Column and table details: PRD section 10.
 
@@ -133,11 +136,27 @@ GAME 1
 Checks: the rallies, statistics and scores agree.
 ```
 
-`details.games[0].rallies` is the score after each rally (`0-1, 1-1, 1-2, ...`). Each match of a download has a `match_code` (`PlayerMatch.match_code`); `details_targets(event.matches)` lists the matches worth requesting. **Storage in the database and the automatic download with the history come in the next iterations** (PRD section 11).
+`details.games[0].rallies` is the score after each rally (`0-1, 1-1, 1-2, ...`). Each match of a download has a `match_code` (`PlayerMatch.match_code`); `details_targets(event.matches)` lists the matches worth requesting. Saved with `HistoryStore.save_match_details(details)` (Match tab, Game tabs and every rally; see below). **The automatic download with the history comes in the next iteration** (PRD section 11).
 
 - **Every figure is checked.** The statistics the site shows (most consecutive points, game points, points played and won) are re-derived from the rally sequence and compared; with `match=` the details are also compared with the match from the player's page (players, scores, winner). Differences are listed in `details.differences`; `details.checks_ok` is `True`, `False` or `None` (nothing to check).
 - **Coverage differs by tournament.** World Tour level events have all of it. Lower-level events (for example an International Challenge) give only the game scores: there is no rally sequence or statistics, the fields are `None` (the site's zeros mean "not tracked"), and `details.tracked` is `False`. Byes and walkovers have no games and are not requested.
 - A match the site does not have raises `BwfNotFoundError`.
+- **Stored as NULL, never 0, where the site does not track it.** The site tracks rallies for most events but for some only the game scores (small tournaments, and also some big or brand-new ones such as a team event in progress). Those games have `tracked = 0` and blank statistics.
+
+```python
+from bwf_player import HistoryStore, details_targets, get_match_details, get_matches, get_tournaments
+
+with HistoryStore("data/bwf_history.sqlite") as store:
+    store.save_tournaments(history, player_name="Jonatan CHRISTIE")
+    for entry in history.entries:
+        event = get_matches(pid, entry)
+        store.save_matches(event)
+        for match in details_targets(event.matches):
+            store.save_match_details(get_match_details(match.tournament_id, match.match_code, match=match))
+    store.export_csv("data/export")          # now also match_stats.csv, game_stats.csv, rallies.csv
+```
+
+An existing database from before this feature is upgraded automatically when it is opened; nothing in it is lost.
 
 ## Player lookup (name to details and ranking)
 
@@ -220,8 +239,8 @@ data/            the downloaded database and CSV files (created on first use, gi
 ## Tests
 
 ```bash
-pytest                                # offline suite (default; no network): 769 tests
-pytest -m live                        # live smoke tests against bwfbadminton.com: 18 tests, about 2 minutes
+pytest                                # offline suite (default; no network): 810 tests
+pytest -m live                        # live smoke tests against bwfbadminton.com: 20 tests, about 2.5 minutes
 python scripts/save_test_results.py   # both suites -> test_results/latest.txt
 python scripts/execute_notebook.py    # re-run the notebook and save its outputs
 ```

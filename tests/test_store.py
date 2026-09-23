@@ -378,9 +378,9 @@ def _read(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
-def test_export_writes_three_files(christie: HistoryStore, tmp_path: Path) -> None:
+def test_export_writes_the_history_files_and_the_game_detail_files(christie: HistoryStore, tmp_path: Path) -> None:
     written = christie.export_csv(tmp_path / "out")
-    assert set(written) == {"results.csv", "matches.csv", "games.csv"}
+    assert set(written) == {"results.csv", "matches.csv", "games.csv", "match_stats.csv", "game_stats.csv", "rallies.csv"}
     assert all(p.is_file() for p in written.values())
     assert len(_read(written["results.csv"])) == 19
     assert len(_read(written["matches.csv"])) == 58
@@ -411,7 +411,7 @@ def test_matches_csv_content(store: HistoryStore, tmp_path: Path) -> None:
         "tournament": "SUWON VICTOR Korea Open 2025", "category": "", "event_code": "MD", "draw_name": "MD",
         "round": "Final", "match_date": "2025-09-28", "status": "played", "won": "0", "partner_id": "91440",
         "partner": "Muhammad Shohibul FIKRI", "opponent_1": "KIM Won Ho", "opponent_2": "SEO Seung Jae",
-        "games": "16-21, 21-23", "duration_min": "50", "match_id": "1462807",
+        "games": "16-21, 21-23", "duration_min": "50", "match_id": "1462807", "match_code": "317",
     }
     bye = next(r for r in rows if r["status"] == "bye")
     assert (bye["won"], bye["opponent_1"], bye["games"]) == ("", "", "")

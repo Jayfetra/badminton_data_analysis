@@ -1,5 +1,25 @@
 # PRD Changelog
 
+## Iteration 10 — 2026-09-23 (R8b: storage of the game details)
+
+**What changed**
+- `store.py`: schema version **2**. New tables `match_stats` (the Match tab), `game_stats` (the Game tabs) and `rallies` (the score after every rally); `matches.match_code`; `HistoryStore.save_match_details(details)`; views `player_match_stats_view`, `player_game_view`, `player_rally_view` in the player's point of view; CSV files `match_stats.csv`, `game_stats.csv`, `rallies.csv`; `match_code` added as the last column of `matches.csv` and of `player_match_view`. Opening a version 1 database migrates it (adds the column, creates the new tables and views; nothing is deleted).
+- The statistic columns, inserts, views and CSV columns are generated from `SideStats`, so they cannot drift apart.
+- Earlier-iteration code touched: `store.py` (as above), `tests/test_store.py` (the CSV file set and the `matches.csv` columns changed), `tests/test_history.py` (the CSV file set; one index into a table row, because `match_code` is now the second column), `tests/test_live.py`. No behaviour of R1-R9 other than these additions changed.
+- PRD_master: version 2.2, section 11 data model rewritten as implemented, storage design note, iteration table.
+
+**Why**
+- The user wants the Match tab and every Game tab recorded, in SQLite and CSV like the rest. Statistics the site does not track are NULL (never 0), because a games-only match with zeros would look like a match with no points won.
+
+**What was tested (`test_results/latest.txt`)**
+- Offline: **810 passed** (769 before; 41 new in `tests/test_store_details.py`): the new tables and views; Christie's whole year (58 match tabs, 138 game tabs, every game with as many rally rows as points); the example match (All England 2026, R16) field by field in all three tables, and the whole 40-rally sequence of game 1; the player's-side views for a match where the player is side 2 and one where the player is side 1; games without details show NULL statistics; games-only matches (NULL statistics, no rallies, in the views and CSV as blanks); saving twice changes nothing; a re-save replaces stale games and rallies; failed checks stored with their text; a missing match code is filled and never erased; refusals (match not stored, no match id, wrong tournament); **a constraint failure half way rolls the match back**; foreign keys; **a real database turned back into a version 1 file is migrated with its data intact**, takes details afterwards, and reopening a current database is harmless; the three CSV files (columns, row counts, values from the player's side, ordering, blanks for untracked, header-only when there are no details).
+- Live: **20 passed** (2 new): China Masters 2026 stored and exported (rally rows equal the sum of the games' points, all checks agree) and Telangana International Challenge 2025 (games only: NULL statistics, no rallies, checks agree).
+
+**Findings**
+- **A live test failed and taught something.** My first live storage test used "the player's latest tournament" and asserted rally data. Because the date had moved on, the latest tournament was the ongoing 2026 Asian Games team event, for which the site gives only game scores. The code was right (untracked, NULL, checks pass); the assumption in the test was wrong. So games-only coverage can affect any event, including new ones. The tests now use fixed historical tournaments.
+- The earlier Iteration 9 live test ("recent matches agree with the player's page") passes for both kinds of tournament, because it does not assume rally data.
+- The default window moved with the date (now 2025-09-23 to 2026-09-23); Christie still has 19 tournaments in it, one of them new (5876, the Asian Games).
+
 ## Iteration 9 — 2026-09-22 (R8a: game details of one match)
 
 **What changed**
