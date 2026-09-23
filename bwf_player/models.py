@@ -142,10 +142,13 @@ class PlayerMatch(BaseModel):
     record, which is what the database keeps. `won` is None for a bye (nobody was played) and if
     the site's winner is unusable. `games` is empty for a bye and a walkover; a retirement keeps the
     points of the game in progress. Filter `status == "played"` for matches that were really played.
+    `match_code` is the site's number of the match within its tournament (the `match/13` of the
+    match page URL); with the tournament id it addresses the match's game details.
     `notes` holds anything odd about this one match.
     """
 
     match_id: int
+    match_code: str | None = None
     tournament_id: int
     draw_id: int | None = None
     draw_name: str | None = None
@@ -175,6 +178,99 @@ class EventMatches(BaseModel):
     event_id: int | None = None
     matches: list[PlayerMatch] = Field(default_factory=list)
     totals_agree: bool | None = None
+    notes: list[str] = Field(default_factory=list)
+
+
+class SideStats(BaseModel):
+    """One side's statistics for a game or a whole match, as the site lists them.
+
+    `consecutive_points` is the longest run of points in a row, `game_points` the number of rallies
+    played while the side was one point from winning the game, `rallies_played` the rallies of the
+    game (or match) and `rallies_won` the side's points. The tracking fields (`smash_winner`,
+    `net_winner`, `clear_winner`, `other`, `challenge_*`) are on the site's payload but empty in
+    every match seen; they are kept as sent.
+    """
+
+    consecutive_points: int | None = None
+    game_points: int | None = None
+    rallies_played: int | None = None
+    rallies_won: int | None = None
+    smash_winner: int | None = None
+    net_winner: int | None = None
+    clear_winner: int | None = None
+    other: int | None = None
+    challenge_used: int | None = None
+    challenge_won: int | None = None
+    challenge_lost: int | None = None
+    challenge_nodecision: int | None = None
+
+
+class Rally(BaseModel):
+    """The score after one rally, in the site's side orientation. `winner_side` is None if the step is not one point."""
+
+    rally_no: int = Field(ge=1)
+    side1_points: int = Field(ge=0)
+    side2_points: int = Field(ge=0)
+    winner_side: Literal[1, 2] | None = None
+
+
+class GameDetail(BaseModel):
+    """One game's tab on the match page. Side 1 and side 2 are the site's own (team 1 and team 2).
+
+    `tracked` is False for tournaments where the site gives only the score: there is then no rally
+    sequence and `side1`/`side2` are None (the site sends zeros there, which mean "not tracked").
+    """
+
+    game_no: int = Field(ge=1)
+    side1_points: int = Field(ge=0)
+    side2_points: int = Field(ge=0)
+    total_points_played: int | None = None
+    tracked: bool = False
+    side1: SideStats | None = None
+    side2: SideStats | None = None
+    rallies: list[Rally] = Field(default_factory=list)
+
+
+class DetailPlayer(BaseModel):
+    """A player on the match page. `country` is the country name as the page shows it."""
+
+    player_id: int | None = None
+    name: str
+    slug: str | None = None
+    country: str | None = None
+
+
+class MatchDetails(BaseModel):
+    """Everything on the site's match page: the Match tab and one tab per game (R8).
+
+    Sides follow the site (side 1 = team 1). `side1`/`side2` are the Match tab's statistics (None
+    when the site does not track the match). `differences` lists every check that failed (the
+    rally sequence, the statistics and, if a `PlayerMatch` was given, the data we already hold);
+    `checks_ok` is True when there is none, False when there is one, None when nothing could be
+    checked. `notes` explains anything else, for example that a game is untracked.
+    """
+
+    match_id: int | None = None
+    tournament_id: int
+    match_code: str
+    tournament_name: str | None = None
+    draw_name: str | None = None
+    round: str | None = None
+    start_local: datetime | None = None
+    venue: str | None = None
+    duration_min: int | None = None
+    winner_side: Literal[1, 2] | None = None
+    score_status: int | None = None
+    side1_players: list[DetailPlayer] = Field(default_factory=list)
+    side2_players: list[DetailPlayer] = Field(default_factory=list)
+    side1_result: int | None = None
+    side2_result: int | None = None
+    side1: SideStats | None = None
+    side2: SideStats | None = None
+    games: list[GameDetail] = Field(default_factory=list)
+    tracked: bool = False
+    checks_ok: bool | None = None
+    differences: list[str] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
 
 

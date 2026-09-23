@@ -9,6 +9,8 @@ Type a badminton player's name and get, from [bwfbadminton.com](https://bwfbadmi
 | **Ranking** | Current rank and how many consecutive weeks the player has held it (plus since when). |
 | **Tournament history** | Every tournament the player entered in the last year, and for each: the **result** (`1st`, `QF`, `R16`, ...), **who they played with** (doubles partner), **who they played against**, and the **points of every game**. Saved to a SQLite database and CSV files; running it again never duplicates anything. |
 
+| **Game details (in progress)** | For one match: the Match tab and every Game tab of the site's match page, including the score after every rally, with built-in consistency checks. Saving them with the history comes next. |
+
 A value the site does not list is `null`, with a note explaining it. A missing field never fails the whole request.
 
 ## Quick start
@@ -94,6 +96,50 @@ con.execute("""SELECT match_date, tournament, round, won, partner, opponent_1, o
 
 `status` is `played`, `bye` (the player advanced without playing; the site counts it as a match won, `won` is empty), `walkover`, `retired` (the partial game is kept) or `disqualified`. Filter `status = 'played'` for matches that were really played. Column and table details: PRD section 10.
 
+## Game details of one match (Match tab, Game 1, Game 2, ...) - in progress
+
+Everything the site's match page shows for one match, including the score after every rally:
+
+```python
+from bwf_player import format_match_details, get_match_details
+
+details = get_match_details(5515, 13)            # tournament id and match number (the "match/13" of the page URL)
+print(format_match_details(details, rallies=False))
+```
+
+```
+All England Open Badminton Championships 2026 | MS | R16 | 2026-03-05 19:15 | Utilita Arena Birmingham | 48 min
+  side 1: LIN Chun-Yi
+  side 2: Jonatan CHRISTIE
+  winner: LIN Chun-Yi
+
+MATCH
+                              side 1  side 2
+  Final match score                2       0
+  Game 1 score                    21      19
+  Game 2 score                    21      12
+  Game points                      7       0
+  Most consecutive points          7       5
+  Total points played             73      73
+  Total points won                42      31
+
+GAME 1
+                              side 1  side 2
+  Score                           21      19
+  Most consecutive points          7       5
+  Game points                      6       0
+  Total points played             40      40
+  Total points won                21      19
+...
+Checks: the rallies, statistics and scores agree.
+```
+
+`details.games[0].rallies` is the score after each rally (`0-1, 1-1, 1-2, ...`). Each match of a download has a `match_code` (`PlayerMatch.match_code`); `details_targets(event.matches)` lists the matches worth requesting. **Storage in the database and the automatic download with the history come in the next iterations** (PRD section 11).
+
+- **Every figure is checked.** The statistics the site shows (most consecutive points, game points, points played and won) are re-derived from the rally sequence and compared; with `match=` the details are also compared with the match from the player's page (players, scores, winner). Differences are listed in `details.differences`; `details.checks_ok` is `True`, `False` or `None` (nothing to check).
+- **Coverage differs by tournament.** World Tour level events have all of it. Lower-level events (for example an International Challenge) give only the game scores: there is no rally sequence or statistics, the fields are `None` (the site's zeros mean "not tracked"), and `details.tracked` is `False`. Byes and walkovers have no games and are not requested.
+- A match the site does not have raises `BwfNotFoundError`.
+
 ## Player lookup (name to details and ranking)
 
 ```python
@@ -175,8 +221,8 @@ data/            the downloaded database and CSV files (created on first use, gi
 ## Tests
 
 ```bash
-pytest                                # offline suite (default; no network): 553 tests
-pytest -m live                        # live smoke tests against bwfbadminton.com: 15 tests, about 2 minutes
+pytest                                # offline suite (default; no network): 769 tests
+pytest -m live                        # live smoke tests against bwfbadminton.com: 18 tests, about 2 minutes
 python scripts/save_test_results.py   # both suites -> test_results/latest.txt
 python scripts/execute_notebook.py    # re-run the notebook and save its outputs
 ```

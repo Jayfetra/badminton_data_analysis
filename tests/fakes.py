@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from bwf_player.config import BwfConfig
+from bwf_player.exceptions import BwfNotFoundError
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -97,6 +98,11 @@ class FakeApiClient:
         if endpoint == "vue-player-tmt-matches":
             name = f"matches_{params.get('playerId')}_{params.get('tmtId')}_{params.get('eventId')}.json"
             return load_fixture(name) if (FIXTURES / name).exists() else {"results": [], "drawCount": 1}
+        if endpoint == "h2h/match":
+            name = f"h2h_match_{params.get('tmt_id')}_{params.get('match_code')}.json"
+            if not (FIXTURES / name).exists():  # the real site answers a match that does not exist with HTTP 404
+                raise BwfNotFoundError(f"h2h/match: HTTP 404 ({params})")
+            return load_fixture(name)
         if endpoint == "vue-tournaments-search":
             return load_fixture(f"calendar_page{int(params.get('page', 1))}.json")
         raise AssertionError(f"unexpected endpoint {endpoint}")

@@ -1,5 +1,33 @@
 # PRD Changelog
 
+## Iteration 9 — 2026-09-22 (R8a: game details of one match)
+
+**What changed**
+- New feature area, PRD section 11 (R8): record what the site's match page shows (Match tab, Game 1, Game 2, ...). This iteration fetches, parses and checks the details of one match; storage is Iteration 10, the integration into the download Iteration 11.
+- Added `bwf_player/game_details.py`: `get_match_details(tournament_id, match_code, client=None, *, match=None)` (one request to `h2h/match`), `details_targets`, `parse_match_details`, `check_internal`, `check_against_match`, `longest_runs`, `game_point_rallies`, `format_match_details`.
+- Models: `SideStats`, `Rally`, `GameDetail`, `DetailPlayer`, `MatchDetails`; `PlayerMatch.match_code`.
+- `BwfNotFoundError` (HTTP 404, new in `exceptions.py`; `http_client.py` raises it and does not retry it); `parsing.to_code`.
+- Earlier-iteration code touched: `matches.py` now reads the match `code` (nothing else changed), `http_client.py` (404 is its own error), `tests/fakes.py`, `__init__.py`, `tests/test_live.py`. The 29 saved match fixtures were regenerated from the same real responses **with `code` included** (they had been trimmed without it); one existing test gained the `match_code` field. No behaviour of R1-R7 changed.
+- Fixtures: 91 real `h2h/match` responses (all 58 Christie matches, doubles, mixed doubles, team events, a retirement, games-only matches, a bye and a walkover), trimmed of avatars, flags and short names.
+
+**Why**
+- The user asked for the game detail of each match as on the match page, including "all information" from the Match and Game tabs. The page loads one endpoint (`h2h/match`) that has all of it, including the score after every rally.
+
+**What was tested (`test_results/latest.txt`)**
+- Offline: **769 passed** (556 before the details module: 553 plus 3 new HTTP-client tests; then 213 new in `tests/test_game_details.py`). Highlights: the example match from the request compared field by field (Match tab, both Game tabs, the whole 40-rally sequence of game 1); **all 88 real matches with details pass every internal check and the cross-check with our own data**; the cross-game longest run, sums, extended games; doubles, team event, retirement, games-only matches, bye, walkover; **each check is proven by corrupting a real response** (lost rally, wrong last score, skipped point, gap in numbering, each wrong statistic at game and match level, wrong result, two match ids, unreadable game or rally); wrong match id, tournament, players, side, scores and winner against our data; malformed payloads; ids validated before any request; 404; Cloudflare block; text layout line by line.
+- Live: **18 passed** (3 new): the example match page (All England 2026, R16), Christie's latest tournament (every played match agrees with our data), and a real 404.
+
+**Findings**
+- **Every statistic the site shows can be re-derived from the rally sequence, and matches it, on all 204 tracked real games**: most consecutive points, game points (rallies played while one point from the game), rallies played and won. Match-level **most consecutive points crosses game boundaries** (it is not the best game's value); other match-level figures are sums.
+- **Coverage varies**: lower-level tournaments (International Challenge) give only the game scores; their statistics are zeros meaning "not tracked". Stored as NULL, not 0, with a note.
+- A missing match is HTTP 404 with a body of `{"stats":null,"games":[]}`; byes and walkovers answer 200 with no games.
+- Names differ slightly between the match page and the player page for a few players (one spelling of `Anindya/Anindiya`); players are compared by id.
+- Not covered by real data: a game reaching 29 points (none of 204 did; 15 went past 21, the longest 26-24). The rule for the deuce end (one point from the game at 29-29) is covered by a unit test only.
+- A connection failure (HTTP 000) happened once during the investigation and did not recur.
+
+**Correction of my own earlier statement**
+- While planning I wrote that Christie beat LIN Chun-Yi in the example match. He lost: LIN Chun-Yi (side 1) won 21-19, 21-12. The plan text was not used for any code; the tests and this documentation use the real result.
+
 ## Iteration 8 — 2026-09-21 (end-to-end history download, notebook, README, full regression)
 
 **What changed**

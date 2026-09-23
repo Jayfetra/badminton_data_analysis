@@ -47,6 +47,7 @@ def test_a_full_singles_match_from_real_data() -> None:
     first = _matches(CHRISTIE, 5625, 28355)[0]
     assert first.model_dump() == {
         "match_id": 1539512,
+        "match_code": "16",
         "tournament_id": 5625,
         "draw_id": 51388,
         "draw_name": "MS",

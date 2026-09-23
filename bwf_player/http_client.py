@@ -24,7 +24,7 @@ from urllib.parse import urlencode
 import requests
 
 from bwf_player.config import BwfConfig
-from bwf_player.exceptions import BlockedByCloudflareError, BwfClientError
+from bwf_player.exceptions import BlockedByCloudflareError, BwfClientError, BwfNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +132,8 @@ class BwfHttpClient:
                 if response.status_code < 400:
                     return response
                 last_problem = f"HTTP {response.status_code}"
+                if response.status_code == 404:
+                    raise BwfNotFoundError(f"{url}: {last_problem}")
                 if response.status_code not in _RETRYABLE_STATUSES:
                     raise BwfClientError(f"{url}: {last_problem}")
                 retry_after = _parse_retry_after(response)

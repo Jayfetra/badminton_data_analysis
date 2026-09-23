@@ -15,5 +15,13 @@ class BlockedByCloudflareError(BwfClientError):
     """
 
 
+class BwfNotFoundError(BwfClientError):
+    """The site answered HTTP 404: the thing asked for does not exist (for example an unknown match).
+
+    Not retried. Unlike a network failure it says something about the data, so callers that can
+    carry on without that one item may catch it.
+    """
+
+
 class InvalidInputError(BwfClientError, ValueError):
     """The caller supplied input that failed validation."""

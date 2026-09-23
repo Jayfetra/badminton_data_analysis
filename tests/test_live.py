@@ -206,3 +206,37 @@ def test_live_end_to_end_history_download_and_a_free_second_run(client: BwfHttpC
         client._session.get = real_get
     assert made == [], "the second run should be answered entirely from the cache"
     assert again.matches == summary.matches and dump() == before
+
+
+def test_live_the_example_match_page(client: BwfHttpClient) -> None:
+    """https://bwfworldtour.bwfbadminton.com/tournament/5515/.../match/13 (All England 2026, R16)."""
+    from bwf_player import get_match_details
+
+    d = get_match_details(5515, 13, client)
+    assert d.match_id == 1505450 and d.round == "R16" and d.venue == "Utilita Arena Birmingham" and d.duration_min == 48
+    assert [p.name for p in d.side1_players] == ["LIN Chun-Yi"] and [p.name for p in d.side2_players] == ["Jonatan CHRISTIE"]
+    assert (d.side1_result, d.side2_result) == (2, 0) and [(g.side1_points, g.side2_points) for g in d.games] == [(21, 19), (21, 12)]
+    assert (d.side1.rallies_played, d.side1.rallies_won, d.side2.rallies_won) == (73, 42, 31)
+    assert (d.side1.consecutive_points, d.side2.consecutive_points, d.side1.game_points, d.side2.game_points) == (7, 5, 7, 0)
+    assert [len(g.rallies) for g in d.games] == [40, 33] and d.tracked and d.checks_ok is True, d.differences
+
+
+def test_live_details_of_recent_matches_agree_with_the_players_page(client: BwfHttpClient) -> None:
+    from bwf_player import details_targets, get_match_details, get_matches, get_tournaments
+
+    entry = get_tournaments("73442", client, with_categories=False).entries[-1]
+    matches = details_targets(get_matches("73442", entry, client).matches)
+    assert matches, "the latest tournament has played matches"
+    for match in matches:
+        details = get_match_details(match.tournament_id, match.match_code, client, match=match)
+        assert details.differences == [] and details.checks_ok is True, (match.round, details.differences)
+        assert details.match_id == match.match_id and len(details.games) == len(match.games)
+
+
+def test_live_a_match_that_does_not_exist_is_not_found(client: BwfHttpClient) -> None:
+    import pytest
+
+    from bwf_player import BwfNotFoundError, get_match_details
+
+    with pytest.raises(BwfNotFoundError):
+        get_match_details(5515, 99999, client)

@@ -8,7 +8,7 @@ import pytest
 import requests
 
 from bwf_player.config import BwfConfig
-from bwf_player.exceptions import BlockedByCloudflareError, BwfClientError
+from bwf_player.exceptions import BlockedByCloudflareError, BwfClientError, BwfNotFoundError
 from bwf_player.http_client import BwfHttpClient
 from fakes import FakeResponse, FakeSession
 
@@ -149,6 +149,30 @@ def test_plain_403_is_a_client_error_not_a_block(tmp_path: Path) -> None:
     with pytest.raises(BwfClientError) as info:
         make_client(tmp_path, session).get_json("ep")
     assert not isinstance(info.value, BlockedByCloudflareError)
+
+
+def test_404_is_a_not_found_error_and_is_not_retried(tmp_path: Path) -> None:
+    session = FakeSession(PAGE, FakeResponse(404, body={"stats": None, "games": []}))
+    with pytest.raises(BwfNotFoundError, match="HTTP 404"):
+        make_client(tmp_path, session).get_json("h2h/match", {"tmt_id": 1, "match_code": 2})
+    assert len(session.requests) == 2  # bootstrap + one attempt, no retry
+
+
+def test_not_found_is_a_client_error_but_other_statuses_are_not_not_found(tmp_path: Path) -> None:
+    assert issubclass(BwfNotFoundError, BwfClientError)
+    for status in (400, 401, 403, 410):
+        session = FakeSession(PAGE, FakeResponse(status, text="no"))
+        with pytest.raises(BwfClientError) as info:
+            make_client(tmp_path, session).get_json("ep")
+        assert not isinstance(info.value, BwfNotFoundError), status
+
+
+def test_a_404_is_not_cached(tmp_path: Path) -> None:
+    session = FakeSession(PAGE, FakeResponse(404, text="gone"), FakeResponse(body={"ok": True}))
+    client = make_client(tmp_path, session)
+    with pytest.raises(BwfNotFoundError):
+        client.get_json("ep", {"q": "x"})
+    assert client.get_json("ep", {"q": "x"}) == {"ok": True}  # asked again, not served from a cached failure
 
 
 def test_non_json_response_raises(tmp_path: Path) -> None:

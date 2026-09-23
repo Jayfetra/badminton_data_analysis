@@ -35,6 +35,7 @@ from bwf_player.models import (
 )
 from bwf_player.names import validate_player_id
 from bwf_player.parsing import clean_text as _clean_text
+from bwf_player.parsing import to_code as _code
 from bwf_player.parsing import to_date as _date
 from bwf_player.parsing import to_int as _int
 
@@ -190,6 +191,7 @@ def _parse_match(
     duration = _int(raw.get("duration")) or None
     match = PlayerMatch(
         match_id=match_id,
+        match_code=_code(raw.get("code")),
         tournament_id=tournament_id,
         draw_id=_int(raw.get("tournament_draw_id")) or _int(draw_key),
         draw_name=_clean_text(raw.get("draw_name")),

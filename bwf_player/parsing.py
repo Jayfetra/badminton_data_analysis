@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import re
 from datetime import date
+
+_CODE = re.compile(r"[0-9A-Za-z_-]{1,20}")
 
 
 def to_int(value: object) -> int | None:
@@ -34,3 +37,15 @@ def clean_text(value: object) -> str | None:
         return None
     text = " ".join(value.split())
     return text or None
+
+
+def to_code(value: object) -> str | None:
+    """A short identifier (letters, digits, ``_``, ``-``; at most 20) from text or a non-negative int; else None."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        value = str(value) if value >= 0 else None
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    return text if _CODE.fullmatch(text) else None
