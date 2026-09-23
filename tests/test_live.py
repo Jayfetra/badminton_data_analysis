@@ -191,6 +191,10 @@ def test_live_end_to_end_history_download_and_a_free_second_run(client: BwfHttpC
     assert summary.all_totals_agree is True, summary.events_disagreeing  # matches reproduce the site's totals
     assert summary.matches_by_status.get("played", 0) >= 30
     assert "Jonatan CHRISTIE" in format_history(summary)
+    # game details are downloaded by default: every played match is either fetched, skipped (bye, walkover) or has no page
+    assert summary.game_details >= 30 and summary.rallies > 1000 and summary.game_details_tracked >= 30
+    assert summary.game_details + summary.game_details_skipped + summary.game_details_not_found == summary.matches
+    assert summary.all_details_agree is True, summary.game_details_disagreeing
 
     def dump() -> list[tuple]:
         with sqlite3.connect(db) as connection:

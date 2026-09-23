@@ -11,11 +11,21 @@ from typing import Any
 
 import pytest
 
-from bwf_player import BwfConfig, download_player_history, format_history
+from bwf_player import BwfConfig, format_history
+from bwf_player import download_player_history as _download_player_history
 from bwf_player.exceptions import BlockedByCloudflareError, InvalidInputError
 from tests.fakes import FakeApiClient
 
 TODAY = date(2026, 9, 21)
+
+
+def download_player_history(*args: Any, **kwargs: Any) -> Any:
+    """These tests are about the history itself, so game details are off unless a test asks for them.
+
+    (The default, game details on, is tested in tests/test_history_details.py.)
+    """
+    kwargs.setdefault("game_details", False)
+    return _download_player_history(*args, **kwargs)
 
 
 def _client(tmp_path: Path, cls: type[FakeApiClient] = FakeApiClient) -> FakeApiClient:

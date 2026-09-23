@@ -34,6 +34,7 @@ def test_is_a_thin_interface_over_the_package(notebook: dict) -> None:
     source = "\n".join("".join(cell["source"]) for cell in code_cells(notebook))
     assert "from bwf_player import" in source and "lookup_player(" in source and "format_result(" in source
     assert "download_player_history(" in source and "format_history(" in source
+    assert "get_match_details(" in source and "format_match_details(" in source
     for forbidden in ("import requests", "rapidfuzz", "BeautifulSoup", "extranet-lv"):
         assert forbidden not in source
 
@@ -62,3 +63,16 @@ def test_shows_the_history_download_and_the_saved_data(notebook: dict) -> None:
     ):
         assert expected in output
     assert "NO - see notes" not in output
+
+
+def test_shows_the_game_details_of_the_example_match(notebook: dict) -> None:
+    output = "".join(
+        "".join(o.get("text", "")) for cell in code_cells(notebook) for o in cell["outputs"]
+    )
+    for expected in (
+        "Game details:", "with rally data", "MATCH", "Final match score", "Most consecutive points", "Total points played",
+        "GAME 1", "GAME 2", "score after each rally: 0-1 1-1 1-2", "Checks: the rallies, statistics and scores agree.",
+        "rallies are stored for this match",
+    ):
+        assert expected in output, expected
+    assert "Checks failed" not in output and "NO - see notes" not in output

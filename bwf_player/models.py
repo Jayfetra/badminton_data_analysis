@@ -282,6 +282,12 @@ class HistorySummary(BaseModel):
     None) and `notes` says why. `all_totals_agree` is True when every event's parsed matches
     reproduce the site's own totals, False if any event differs (listed in `events_disagreeing`),
     None when no event had totals to compare. `history` and `event_matches` hold the data itself.
+
+    Game details (R8): `game_details` matches had their details downloaded (`game_details_tracked`
+    with rally data, `game_details_untracked` with only game scores), `game_details_skipped` were not
+    requested (byes, walkovers) and `game_details_not_found` had no page on the site. `all_details_agree`
+    is True when every downloaded match passed all checks, False if any did not (listed in
+    `game_details_disagreeing`), None when none was downloaded. `details` holds them.
     """
 
     search: SearchResult | None = None
@@ -297,10 +303,19 @@ class HistorySummary(BaseModel):
     events_checked: int = 0
     events_disagreeing: list[str] = Field(default_factory=list)
     all_totals_agree: bool | None = None
+    game_details: int = 0
+    game_details_tracked: int = 0
+    game_details_untracked: int = 0
+    game_details_skipped: int = 0
+    game_details_not_found: int = 0
+    game_details_disagreeing: list[str] = Field(default_factory=list)
+    all_details_agree: bool | None = None
+    rallies: int = 0
     database: str | None = None
     csv_files: dict[str, str] = Field(default_factory=dict)
     history: TournamentHistory | None = None
     event_matches: list[EventMatches] = Field(default_factory=list)
+    details: list[MatchDetails] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
 
 

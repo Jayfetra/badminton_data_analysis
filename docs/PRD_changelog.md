@@ -1,5 +1,35 @@
 # PRD Changelog
 
+## Iteration 11 — 2026-09-23 (R8c: game details in the one-call download, notebook, README, full regression)
+
+**What changed**
+- `download_player_history(..., game_details=True)`: after each event's matches, the game details of every played match are fetched, checked, saved and counted. New `HistorySummary` fields: `game_details`, `game_details_tracked`, `game_details_untracked`, `game_details_skipped`, `game_details_not_found`, `game_details_disagreeing`, `all_details_agree`, `rallies`, `details`. `format_history(summary, games=True)` adds a line per game and the header has a `Game details:` line and its own check line.
+- `scripts/download_history.py`: `--no-game-details` and `--show-games`.
+- Notebook: section 4 now downloads the game details (`GAME_DETAILS = True`, switchable); new section 5 shows the Match tab, Game 1 and Game 2 and the rally sequence for the example match of the request, and reads the same match back from the database; committed **with its executed outputs** from a real run (10 code cells, no errors).
+- README rewritten for the finished feature; PRD_master version 3.0.
+- Earlier-iteration code touched: additions to `models.py` (`HistorySummary`), `history.py` and the script. `tests/test_history.py` now keeps its tests on the history itself by turning the game details off in a small wrapper (they are tested in the new file); one live test was extended.
+
+**Why**
+- The user asked to record the Match and Game tabs of every match of the same one-year download, on by default. Details are fetched right after each event so that a failure keeps everything finished so far, and a missing page is noted instead of aborting the whole download.
+
+**What was tested (`test_results/latest.txt`, final regression)**
+- Offline: **835 passed** (810 before; 24 new in `tests/test_history_details.py` plus one in `tests/test_notebook.py`). Christie's whole year from fixtures: 58 details, 138 games, all checks agree, exactly one request per match (right parameters, right order), database and six CSV files, JSON, running twice changes nothing, progress messages; the switch turns it all off; details can be added to an existing history database without touching it; games-only matches stored as NULL with the note; byes and walkovers not requested; a doubles run; a missing details page noted while the rest carries on; **a corrupted response is reported and stored but does not stop the download**; **a Cloudflare block on the 11th details request keeps the earlier matches and a re-run gives a database identical to an uninterrupted run**; a malformed details response stops with a clear error; the report header, per-game lines and games-only marker; the command line (default, `--no-game-details`, `--show-games`).
+- Live: **20 passed** in 4 min 38 s. The end-to-end test now downloads the real details for Christie's whole year and checks that every played match is fetched, skipped or noted, that all checks agree, and that a second run makes **no request**.
+- Notebook executed in a real kernel (10 code cells, no errors). Real result: 19 tournaments, 58 matches, 139 games; details for 58 matches, 56 with rally data (4,779 rallies) and 2 with game scores only; all checks agree.
+- **Fresh environment:** the current tree was copied to a temporary folder, installed into a new virtual environment and its offline suite run there: 835 passed.
+
+**Findings**
+- The two games-only matches in Christie's real download are from the ongoing 2026 Asian Games team event; so games-only coverage is not limited to small tournaments (also in the Iteration 10 entry). Both are stored with NULL statistics and pass the checks against the player's page.
+- The window moved with the date (2025-09-23 to 2026-09-23): China Masters 2025 dropped out, the Asian Games came in, and Christie still has 19 tournaments and 58 matches (139 games instead of 138).
+- The live suite is now much longer (4 min 38 s instead of about 2.5 minutes) because its end-to-end test does the real ~85-request download once; run it sparingly.
+
+**Stale statements corrected**
+- PRD risk 4 (live suite length) and risk 5 (request volume: about 85 with game details), PRD open question 9 (terms of service: more requests now), README test counts and cost lines, the README's "in progress" / "comes next" wording for game details, and PRD section 11's status.
+
+**Still open**
+- The terms and conditions of bwfbadminton.com remain unreviewed (PRD section 8, items 2 and 9; acknowledged by the user).
+- Not covered by real data: a disqualification, a match still in progress, and a game reaching 29 points (PRD section 8, item 6 and section 4).
+
 ## Iteration 10 — 2026-09-23 (R8b: storage of the game details)
 
 **What changed**

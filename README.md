@@ -8,7 +8,7 @@ Type a badminton player's name and get, from [bwfbadminton.com](https://bwfbadmi
 | **Personal details** | Nationality, height (cm), playing hand (Right/Left). |
 | **Ranking** | Current rank and how many consecutive weeks the player has held it (plus since when). |
 | **Tournament history** | Every tournament the player entered in the last year, and for each: the **result** (`1st`, `QF`, `R16`, ...), **who they played with** (doubles partner), **who they played against**, and the **points of every game**. Saved to a SQLite database and CSV files; running it again never duplicates anything. |
-| **Game details (in progress)** | For one match: the Match tab and every Game tab of the site's match page, including the score after every rally, with built-in consistency checks. Saving them with the history comes next. |
+| **Game details** | For every played match, what the site's match page shows: the **Match tab** and every **Game tab** (game points, most consecutive points, total points played and won) and the **score after every rally**, with built-in consistency checks. Downloaded with the history by default, saved in the same database and CSV files. |
 
 A value the site does not list is `null`, with a note explaining it. A missing field never fails the whole request.
 
@@ -20,7 +20,7 @@ python -m venv .venv
 pip install -e ".[dev,notebook]"   # "notebook" adds what is needed to run the notebook
 ```
 
-**Notebook:** open [notebook.ipynb](notebook.ipynb) (VS Code or Jupyter), set `PLAYER_NAME`, run all cells. Section 4 downloads the last year's history. The committed notebook already contains a run, so you can read the results without running anything.
+**Notebook:** open [notebook.ipynb](notebook.ipynb) (VS Code or Jupyter), set `PLAYER_NAME`, run all cells. Section 4 downloads the last year's history with the game details of every match, section 5 shows the Match and Game tabs of one match. The committed notebook already contains a run, so you can read the results without running anything.
 
 **Command line:** the whole history download in one command.
 
@@ -28,6 +28,8 @@ pip install -e ".[dev,notebook]"   # "notebook" adds what is needed to run the n
 python scripts/download_history.py "Jonatan Christie"
 python scripts/download_history.py 73442 --since 2026-01-01 --until 2026-06-30
 python scripts/download_history.py "Fajar Alfian" --db data/fajar.sqlite --out data/fajar_csv --no-matches
+python scripts/download_history.py "Jonatan Christie" --show-games        # also one line per game
+python scripts/download_history.py "Jonatan Christie" --no-game-details   # the shorter download without game details
 ```
 
 ## Tournament history (one call)
@@ -39,18 +41,23 @@ summary = download_player_history("jonathan cristie")    # a name, or the player
 print(format_history(summary))
 ```
 
-Real output (2026-09-21; the window is one year back from today):
+Real output (2026-09-23; the window is one year back from today):
 
 ```
 Search:       FOUND - Matched 'Jonatan CHRISTIE' (score 94).
 Player:       Jonatan CHRISTIE (id 73442)
-Window:       2025-09-21 to 2026-09-21
-Downloaded:   19 tournament(s), 19 event(s), 58 match(es) (58 played), 138 game(s)
+Window:       2025-09-23 to 2026-09-23
+Downloaded:   19 tournament(s), 19 event(s), 58 match(es) (58 played), 139 game(s)
 Checked:      the matches reproduce the site's own totals: yes (19 event(s))
+Game details: 58 match(es), 56 with rally data, 2 with game scores only, 4779 rallies
+Checked:      rallies, statistics and scores agree with each other and with the player's page: yes
 Database:     data\bwf_history.sqlite
 CSV:          data\export\results.csv
 CSV:          data\export\matches.csv
 CSV:          data\export\games.csv
+CSV:          data\export\match_stats.csv
+CSV:          data\export\game_stats.csv
+CSV:          data\export\rallies.csv
 
 2025-09-23  SUWON VICTOR Korea Open 2025  [MS]  result: 1st  5-0 in matches  (HSBC BWF World Tour Super 500)
     R32       won              vs NG Ka Long Angus  21-11, 21-17
@@ -68,10 +75,17 @@ In doubles each match also names the partner and both opponents:
 
 - The window is `since`/`until` (default: one year back from today to today). A tournament counts if its dates overlap the window.
 - **The "Checked" line is a built-in test.** The site shows its own totals for each tournament (matches, games and points won and lost). The downloaded matches are added up and compared with them; any difference is listed in `summary.notes` and `summary.events_disagreeing`.
-- **Cost.** About 25 requests for a singles player who entered 19 events (two for the years, up to four for tournament categories, one per event entered), a minute or two at the polite pace of 2.5 s per request; doubles players who enter several events per tournament need more. Everything is cached, so repeating the call is instant and free.
+- **Game details** are downloaded by default: one more request per played match, checked and saved with the history. `download_player_history(..., game_details=False)` (command line `--no-game-details`) skips them. `format_history(summary, games=True)` (command line `--show-games`) prints one line per game:
+  ```
+  2026-09-01  LI-NING China Masters 2026  [MS]  result: R16  1-1 in matches  (HSBC BWF World Tour Super 750)
+      R32       won              vs LEONG Jun Hao  21-17, 21-19
+          game 1  21-17  38 rallies  longest run 3-3  game points 3-0
+          game 2  21-19  40 rallies  longest run 7-4  game points 1-0
+  ```
+- **Cost.** About 25 requests for a singles player who entered 19 events without game details (two for the years, up to four for tournament categories, one per event entered), and one more per played match with them: about 85 for 58 matches, roughly four minutes at the polite pace of 2.5 s per request. Doubles players who enter several events per tournament need more. Everything is cached, so repeating the call is instant and free.
 - **Failures.** If a request fails (for example Cloudflare blocks it) the exception is raised and whatever was saved up to then stays in the database. Run the same call again later: it continues from the cache and updates the same rows.
 - A name that matches no single player, or a player with no tournament in the window, downloads nothing and creates no database; `summary.notes` says why.
-- `summary` is a pydantic model (`summary.matches`, `summary.all_totals_agree`, `summary.history`, `summary.event_matches`, `summary.model_dump_json()`).
+- `summary` is a pydantic model (`summary.matches`, `summary.all_totals_agree`, `summary.game_details`, `summary.rallies`, `summary.all_details_agree`, `summary.history`, `summary.event_matches`, `summary.details`, `summary.model_dump_json()`).
 
 ### The saved data
 
@@ -98,7 +112,7 @@ con.execute("""SELECT match_date, tournament, round, won, partner, opponent_1, o
 
 `status` is `played`, `bye` (the player advanced without playing; the site counts it as a match won, `won` is empty), `walkover`, `retired` (the partial game is kept) or `disqualified`. Filter `status = 'played'` for matches that were really played. Column and table details: PRD section 10.
 
-## Game details of one match (Match tab, Game 1, Game 2, ...) - in progress
+## Game details of one match (Match tab, Game 1, Game 2, ...)
 
 Everything the site's match page shows for one match, including the score after every rally:
 
@@ -136,7 +150,7 @@ GAME 1
 Checks: the rallies, statistics and scores agree.
 ```
 
-`details.games[0].rallies` is the score after each rally (`0-1, 1-1, 1-2, ...`). Each match of a download has a `match_code` (`PlayerMatch.match_code`); `details_targets(event.matches)` lists the matches worth requesting. Saved with `HistoryStore.save_match_details(details)` (Match tab, Game tabs and every rally; see below). **The automatic download with the history comes in the next iteration** (PRD section 11).
+`details.games[0].rallies` is the score after each rally (`0-1, 1-1, 1-2, ...`). Each match of a download has a `match_code` (`PlayerMatch.match_code`); `details_targets(event.matches)` lists the matches worth requesting. `download_player_history` does all of this for every played match of the download and saves it (`HistoryStore.save_match_details(details)`: Match tab, Game tabs and every rally; see below). To get one match on its own, use `get_match_details` as above.
 
 - **Every figure is checked.** The statistics the site shows (most consecutive points, game points, points played and won) are re-derived from the rally sequence and compared; with `match=` the details are also compared with the match from the player's page (players, scores, winner). Differences are listed in `details.differences`; `details.checks_ok` is `True`, `False` or `None` (nothing to check).
 - **Coverage differs by tournament.** World Tour level events have all of it. Lower-level events (for example an International Challenge) give only the game scores: there is no rally sequence or statistics, the fields are `None` (the site's zeros mean "not tracked"), and `details.tracked` is `False`. Byes and walkovers have no games and are not requested.
@@ -239,15 +253,15 @@ data/            the downloaded database and CSV files (created on first use, gi
 ## Tests
 
 ```bash
-pytest                                # offline suite (default; no network): 810 tests
-pytest -m live                        # live smoke tests against bwfbadminton.com: 20 tests, about 2.5 minutes
+pytest                                # offline suite (default; no network): 835 tests
+pytest -m live                        # live smoke tests against bwfbadminton.com: 20 tests, about 5 minutes (one does the full real download)
 python scripts/save_test_results.py   # both suites -> test_results/latest.txt
 python scripts/execute_notebook.py    # re-run the notebook and save its outputs
 ```
 
 ## Limitations and cautions
 
-- **Cloudflare.** The site blocks automated traffic it dislikes; during development a test IP was hard-blocked after about 15 quick requests. The client waits 2.5 s between requests, caches everything, and stops at once (raising `BlockedByCloudflareError`) if it is blocked. Do not loop it over many players: a download is tens of requests per player.
+- **Cloudflare.** The site blocks automated traffic it dislikes; during development a test IP was hard-blocked after about 15 quick requests. The client waits 2.5 s between requests, caches everything, and stops at once (raising `BlockedByCloudflareError`) if it is blocked. Do not loop it over many players: a download is about 25 requests per player, about 85 with the game details.
 - **Unofficial API.** It is the site's own front-end API, undocumented, and may change without notice. **The site's terms and conditions have not been reviewed**; check them before any use beyond personal research.
 - **Search limits.** A typo inside a one-word query ("cristie") is not matched. A typo'd name for a player missing from the site's player list (e.g. Kento Momota) is not found. A reversed name for such a player, when its words are common, may fail ("Dan Lin" does not find "LIN Dan"). Details and workarounds: PRD section 8. To avoid the search, pass the player id.
 - **Ranking events.** The result reports the first event the site lists (usually singles); others are in `other_events`.
