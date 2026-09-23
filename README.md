@@ -8,7 +8,6 @@ Type a badminton player's name and get, from [bwfbadminton.com](https://bwfbadmi
 | **Personal details** | Nationality, height (cm), playing hand (Right/Left). |
 | **Ranking** | Current rank and how many consecutive weeks the player has held it (plus since when). |
 | **Tournament history** | Every tournament the player entered in the last year, and for each: the **result** (`1st`, `QF`, `R16`, ...), **who they played with** (doubles partner), **who they played against**, and the **points of every game**. Saved to a SQLite database and CSV files; running it again never duplicates anything. |
-
 | **Game details (in progress)** | For one match: the Match tab and every Game tab of the site's match page, including the score after every rally, with built-in consistency checks. Saving them with the history comes next. |
 
 A value the site does not list is `null`, with a note explaining it. A missing field never fails the whole request.
