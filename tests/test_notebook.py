@@ -76,3 +76,16 @@ def test_shows_the_game_details_of_the_example_match(notebook: dict) -> None:
     ):
         assert expected in output, expected
     assert "Checks failed" not in output and "NO - see notes" not in output
+
+
+def test_shows_two_players_side_by_side(notebook: dict) -> None:
+    output = "".join(
+        "".join(o.get("text", "")) for cell in code_cells(notebook) for o in cell["outputs"]
+    )
+    for expected in (
+        "Player:       AN Se Young", "Matches played in the window", "Jonatan CHRISTIE", "AN Se Young",
+        "Rally statistics per player", "points_won_pct", "The longest games", "Comeback games",
+        "Latest matches of player", "Rallies of game 1",
+    ):
+        assert expected in output, expected
+    assert "Traceback" not in output

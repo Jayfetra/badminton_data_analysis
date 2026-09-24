@@ -20,7 +20,7 @@ python -m venv .venv
 pip install -e ".[dev,notebook]"   # "notebook" adds what is needed to run the notebook
 ```
 
-**Notebook:** open [notebook.ipynb](notebook.ipynb) (VS Code or Jupyter), set `PLAYER_NAME`, run all cells. Section 4 downloads the last year's history with the game details of every match, section 5 shows the Match and Game tabs of one match. The committed notebook already contains a run, so you can read the results without running anything.
+**Notebook:** open [notebook.ipynb](notebook.ipynb) (VS Code or Jupyter), set `PLAYER_NAME`, run all cells. Section 4 downloads the last year's history with the game details of every match, section 5 shows the Match and Game tabs of one match, and section 6 compares two players (Jonatan Christie and An Se Young) with SQL on the saved data. The notebook keeps its own database (`data/bwf_notebook.sqlite`). The committed notebook already contains a run, so you can read the results without running anything.
 
 **Command line:** the whole history download in one command.
 
@@ -86,6 +86,35 @@ In doubles each match also names the partner and both opponents:
 - **Failures.** If a request fails (for example Cloudflare blocks it) the exception is raised and whatever was saved up to then stays in the database. Run the same call again later: it continues from the cache and updates the same rows.
 - A name that matches no single player, or a player with no tournament in the window, downloads nothing and creates no database; `summary.notes` says why.
 - `summary` is a pydantic model (`summary.matches`, `summary.all_totals_agree`, `summary.game_details`, `summary.rallies`, `summary.all_details_agree`, `summary.history`, `summary.event_matches`, `summary.details`, `summary.model_dump_json()`).
+
+### Sample: two players compared with SQL
+
+Real output of notebook section 6 (2026-09-24; Jonatan Christie and An Se Young, one year each, everything from the saved views):
+
+```
+Matches played in the window
+player            matches  won  lost  win_pct
+Jonatan CHRISTIE  58       38   20    65.5
+AN Se Young       77       75   2     97.4
+
+Rally statistics per player (matches with rally data)
+player            matches  avg_minutes  avg_rallies  points_won_pct  best_run  worst_run_against
+Jonatan CHRISTIE  56       53.9         85.3         52.8            10        9
+AN Se Young       75       45.4         72.5         61.6            16        10
+
+Comeback games: won after trailing by 8 points or more (needs the rally-by-rally data)
+player            date        tournament                  round  opponent      game  score  max_deficit
+AN Se Young       2026-06-06  POLYTRON Indonesia Open 20  SF     CHEN Yu Fei   3     23-21  10
+AN Se Young       2025-10-19  VICTOR Denmark Open 2025    Final  WANG Zhi Yi   2     24-22  9
+Jonatan CHRISTIE  2026-01-17  YONEX-SUNRISE India Open 2  SF     LOH Kean Yew  1     21-18  8
+
+Latest matches of player 87442 (the match-level columns come from the Match tab)
+date        tournament                    round  won  opponent          games         min  rallies  run  run_against
+2026-09-23  20th Asian Games Aichi-Nagoy  SF     1    Akane YAMAGUCHI   21-9, 18-21, 21-11  87   -    -    -
+2026-09-06  LI-NING China Masters 2026    Final  1    Tomoka MIYAZAKI   21-17, 21-6   45   65       9    3
+```
+
+The two 2026 Asian Games matches show `-` for rallies and runs: for that team event the site gives only the game scores, so the statistics are empty (NULL), not zero.
 
 ### The saved data
 

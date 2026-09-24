@@ -317,6 +317,8 @@ Added 2026-09-21. For each match downloaded in section 10, record what the site'
 
 All of R8 is implemented and tested: fetch, parse and check one match (Iteration 9), storage (Iteration 10) and, tying it together, `download_player_history(..., game_details=True)` with the command line and the notebook (Iteration 11).
 
+**Second player (2026-09-24):** An Se Young, window 2025-09-24 to 2026-09-24: 17 tournaments, 79 matches, 168 games, game details for 77 matches (75 with rally data, 5,439 rallies), all checks agree; shown next to Christie in notebook section 6.
+
 **Live result (2026-09-23), Jonatan CHRISTIE, window 2025-09-23 to 2026-09-23:** 19 tournaments, 58 matches, 139 games; game details for all 58 matches: 56 with rally data (4,779 rallies) and 2 with game scores only (the ongoing 2026 Asian Games team event); every check agrees (rallies, statistics, scores, and the player's page). A second run is answered entirely from the cache (tested live: no request) and leaves the database unchanged. The notebook reproduces the example match of the request (All England 2026, R16, match 13) with the Match tab, both Game tabs and the rally sequence.
 
 **Differences from the plan approved on 2026-09-21 (R8):** none in scope or design. Tests and fixtures are as planned; the plan text wrongly said Christie beat LIN Chun-Yi in the example match (he lost; corrected in the Iteration 9 changelog).

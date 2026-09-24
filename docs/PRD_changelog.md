@@ -1,5 +1,17 @@
 # PRD Changelog
 
+## Notebook update — 2026-09-24 (two players side by side)
+
+**What changed**
+- Notebook section 6: downloads a second player (An Se Young) into the same database and compares the two with SQL on the views: record, results and titles, rally statistics (average length, share of points won, best run), the longest games, comeback games (needs the rally data), the latest matches with their Match-tab figures, and the first rallies of a game. `SECOND_PLAYER` can be changed. Committed with real outputs (16 code cells, no errors).
+- The notebook now uses its own database (`data/bwf_notebook.sqlite`) and CSV folder (`data/notebook_export`), so runs of the command line or of older notebooks (with other date windows) cannot mix into its samples. New guard test for section 6 (836 offline tests).
+- No package code changed.
+
+**Real result (2026-09-24, window 2025-09-24 to 2026-09-24):** An Se Young: 17 tournaments, 79 matches (76 played, 1 retired, 2 walkovers), 168 games; game details for 77 matches (75 with rally data, 2 games-only; 5,439 rallies; 2 walkovers not requested); all checks agree; 11 titles, record 75-2. Jonatan Christie: 19 tournaments, 58 matches, 38-20; 56 matches with rally data.
+
+**Finding (why the notebook got its own database)**
+- The first sample showed 60 matches for Christie instead of 58. The shared `data/bwf_history.sqlite` still held two matches from an earlier run whose window (from 2025-09-21) included China Masters 2025; saving never deletes rows, so they stayed after the window moved. This is documented behaviour (README, "Stored data") but easy to overlook in a sample; a dedicated file removes it. To clean a database, delete the file and download again.
+
 ## Iteration 11 — 2026-09-23 (R8c: game details in the one-call download, notebook, README, full regression)
 
 **What changed**
