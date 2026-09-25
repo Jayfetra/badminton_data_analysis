@@ -285,3 +285,26 @@ def test_the_text_report_for_a_name_that_matched_nobody_or_several(tmp_path: Pat
 def test_the_text_report_for_an_empty_window(tmp_path: Path) -> None:
     text = format_history(download_player_history(999999999, _client(tmp_path), today=TODAY))
     assert "Downloaded:   0 tournament(s)" in text and "no tournaments in the window" in text
+
+
+def test_the_report_says_a_match_has_not_been_played_yet() -> None:
+    from bwf_player.models import EventMatches, HistorySummary, MatchPlayer, PlayerMatch, TournamentEntry, TournamentHistory
+
+    entry = TournamentEntry(tournament_id=5874, name="Asian Games (Individual)", start_date=date(2026, 9, 25),
+                            end_date=date(2026, 9, 29), event_code="MS", event_id=1)
+    me = MatchPlayer(player_id=1, name="P")
+
+    def match(mid: int, status: str, rnd: str, day: date | None) -> PlayerMatch:
+        return PlayerMatch(match_id=mid, tournament_id=5874, side=1, player=me, status=status, round=rnd, match_date=day,  # type: ignore[arg-type]
+                           opponents=[MatchPlayer(player_id=2, name="Opp")])
+
+    summary = HistorySummary(
+        player_id="1", player_name="P", since=date(2026, 9, 1), until=date(2026, 9, 25), events=1, tournaments=1, matches=2,
+        matches_by_status={"scheduled": 1, "in_progress": 1},
+        history=TournamentHistory(player_id="1", since=date(2026, 9, 1), until=date(2026, 9, 25), entries=[entry]),
+        event_matches=[EventMatches(tournament_id=5874, event_code="MS", event_id=1, matches=[
+            match(1, "scheduled", "R32", date(2026, 9, 26)), match(2, "in_progress", "R16", date(2026, 9, 27))])],
+    )
+    text = format_history(summary)
+    assert "R32       not played yet (2026-09-26)" in text and "R16       in progress (2026-09-27)" in text
+    assert "(1 in_progress, 1 scheduled)" in text and "?" not in text.split("R32")[1].split("\n")[0]

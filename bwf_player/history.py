@@ -200,7 +200,7 @@ def format_history(summary: HistorySummary, *, matches: bool = True, games: bool
         if summary.rallies:
             parts.append(f"{summary.rallies} rallies")
         if summary.game_details_skipped:
-            parts.append(f"{summary.game_details_skipped} not requested (byes, walkovers)")
+            parts.append(f"{summary.game_details_skipped} not requested (byes, walkovers, matches not played yet)")
         if summary.game_details_not_found:
             parts.append(f"{summary.game_details_not_found} without a details page")
         lines.append("Game details: " + ", ".join(parts))
@@ -235,6 +235,10 @@ def format_history(summary: HistorySummary, *, matches: bool = True, games: bool
 def _match_line(match: PlayerMatch) -> str:
     if match.status == "bye":
         outcome = "bye"
+    elif match.status in ("scheduled", "in_progress"):
+        outcome = "not played yet" if match.status == "scheduled" else "in progress"
+        if match.match_date:
+            outcome += f" ({match.match_date})"
     else:
         outcome = {True: "won", False: "lost", None: "?"}[match.won]
         if match.status != "played":

@@ -162,8 +162,12 @@ def test_live_store_and_export_reproduce_the_sites_totals(client: BwfHttpClient,
     from bwf_player import get_matches, get_tournaments
     from bwf_player.store import HistoryStore
 
-    history = get_tournaments("73442", client, with_categories=False)
-    history.entries = history.entries[-3:]  # the same three events the other live tests already fetched
+    from datetime import date
+
+    # Japan Open, China Open and the World Championships 2026: three finished events (a window that does not move,
+    # unlike "the latest tournament", which can be one still under way)
+    history = get_tournaments("73442", client, with_categories=False, since=date(2026, 7, 14), until=date(2026, 8, 23))
+    assert len(history.entries) == 3, [e.name for e in history.entries]
     with HistoryStore(tmp_path / "live.sqlite") as store:
         store.save_tournaments(history, player_name="Jonatan CHRISTIE")
         for entry in history.entries:
@@ -228,9 +232,12 @@ def test_live_the_example_match_page(client: BwfHttpClient) -> None:
 def test_live_details_of_recent_matches_agree_with_the_players_page(client: BwfHttpClient) -> None:
     from bwf_player import details_targets, get_match_details, get_matches, get_tournaments
 
-    entry = get_tournaments("73442", client, with_categories=False).entries[-1]
+    from datetime import date
+
+    # LI-NING China Masters 2026 (a finished event; "the latest tournament" can be one that has not started playing yet)
+    (entry,) = get_tournaments("73442", client, with_categories=False, since=date(2026, 9, 1), until=date(2026, 9, 6)).entries
     matches = details_targets(get_matches("73442", entry, client).matches)
-    assert matches, "the latest tournament has played matches"
+    assert len(matches) == 2, "China Masters 2026: two played matches"
     for match in matches:
         details = get_match_details(match.tournament_id, match.match_code, client, match=match)
         assert details.differences == [] and details.checks_ok is True, (match.round, details.differences)

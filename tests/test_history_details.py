@@ -171,7 +171,7 @@ def test_byes_and_walkovers_are_not_requested(tmp_path: Path) -> None:
     assert summary.matches_by_status == {"bye": 1, "walkover": 1}
     assert (summary.game_details, summary.game_details_skipped) == (0, 2)
     assert client.calls_to("h2h/match") == [] and summary.all_details_agree is None
-    assert "2 not requested (byes, walkovers)" in format_history(summary)
+    assert "2 not requested (byes, walkovers, matches not played yet)" in format_history(summary)
 
 
 def test_a_doubles_run_with_details(tmp_path: Path) -> None:

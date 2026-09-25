@@ -11,6 +11,7 @@ from typing import Any
 import pytest
 
 from bwf_player.exceptions import BlockedByCloudflareError, BwfClientError, InvalidInputError
+from bwf_player.game_details import details_targets
 from bwf_player.matches import check_totals, get_matches, parse_matches
 from bwf_player.models import PlayerMatch, TournamentEntry
 from bwf_player.tournaments import get_tournaments
@@ -570,3 +571,59 @@ def test_parser_does_not_mutate_its_input() -> None:
     before = copy.deepcopy(payload)
     parse_matches(payload, APRIYANI, 5623)
     assert payload == before
+
+
+# ---------------------------------------------------------------- matches not played yet (real: Asian Games 2026, individual)
+
+def test_a_match_that_has_not_started_is_scheduled() -> None:
+    """The site sends match_state "N", winner 0, no games and a planned start time."""
+    matches, notes = parse_matches(load_fixture("matches_73442_5874_29880.json"), CHRISTIE, 5874)
+    assert notes == [] and [(m.round, m.status) for m in matches] == [("R64", "bye"), ("R32", "scheduled")]
+    scheduled = matches[1]
+    assert (scheduled.won, scheduled.games, scheduled.notes) == (None, [], [])  # no winner note, no missing-score note
+    assert scheduled.match_date == date(2026, 9, 26) and scheduled.match_code == "16"
+    assert [o.name for o in scheduled.opponents] == ["Dzhumaboi SAIDOV"] and scheduled.duration_min is None
+
+
+def test_the_totals_of_an_event_with_a_pending_match_still_agree() -> None:
+    """The site's summary counts the bye as a win and the unplayed match as nothing."""
+    matches, _ = parse_matches(load_fixture("matches_73442_5874_29880.json"), CHRISTIE, 5874)
+    entry = TournamentEntry(
+        tournament_id=5874, name="Asian Games", start_date=date(2026, 9, 25), end_date=date(2026, 9, 29), event_code="MS",
+        event_id=29880, position="R32", matches_won=1, matches_lost=0, games_won=0, games_lost=0, points_for=0, points_against=0,
+    )
+    assert check_totals(entry, matches) == (True, [])
+
+
+def test_a_pending_match_is_not_requested_for_details() -> None:
+    matches, _ = parse_matches(load_fixture("matches_73442_5874_29880.json"), CHRISTIE, 5874)
+    assert details_targets(matches) == []
+
+
+@pytest.mark.parametrize(
+    ("state", "games", "expected"),
+    [("N", False, "scheduled"), ("n", False, "scheduled"), ("P", True, "in_progress"), ("L", True, "in_progress"),
+     ("P", False, "scheduled"), ("F", True, "played"), ("f", True, "played"), (None, True, "played"), ("", True, "played")],
+)
+def test_the_match_state_decides_between_finished_scheduled_and_in_progress(state: object, games: bool, expected: str) -> None:
+    raw = _raw(match_state=state, winner=0 if expected != "played" else 1, player_win=False if expected != "played" else True)
+    if not games:
+        raw.update(match_set_model=[], team1Score="", team2Score="", result_team1=None, result_team2=None)
+    (match,), _ = _parse(raw)
+    assert match.status == expected
+    if expected != "played":
+        assert match.won is None and match.notes == []
+
+
+def test_an_unfinished_match_never_counts_as_a_win_or_loss() -> None:
+    raw = _raw(match_state="P", winner=0, player_win=False, result_team1=None, result_team2=None)
+    (match,), _ = _parse(raw)
+    assert (match.status, match.won) == ("in_progress", None) and len(match.games) == 2  # the games so far are kept
+
+
+def test_retirements_and_walkovers_are_not_turned_into_pending_matches() -> None:
+    (retired,), _ = _parse(_raw(match_state="F", status_name="Retired", score_status=2, winner=2, player_win=False,
+                              match_set_model=[{"ordering": 1, "team1": 16, "team2": 21}], result_team1=0, result_team2=1))
+    assert retired.status == "retired" and retired.won is False
+    (walkover,), _ = _parse(_raw(match_state="N", status_name="Walkover", score_status=1, match_set_model=[]))
+    assert walkover.status == "walkover"  # a walkover keeps its own status whatever the state says

@@ -173,14 +173,17 @@ def _parse_match(
     status = _status(raw)
     if status == "played" and not theirs and _is_bye(raw):
         status = "bye"
+    games, game_notes = _games(raw, side)
+    if status == "played" and not _is_finished(raw):  # a match that has not been played to the end
+        status = "in_progress" if games else "scheduled"
     winner = _int(raw.get("winner"))
-    won: bool | None = (winner == side) if winner in (1, 2) and status != "bye" else None
-    if won is None and status != "bye":
+    no_result_expected = status in ("bye", "scheduled", "in_progress")
+    won: bool | None = (winner == side) if winner in (1, 2) and not no_result_expected else None
+    if won is None and not no_result_expected:
         notes.append("The site gives no usable winner for this match.")
     elif won is not None and isinstance(raw.get("player_win"), bool) and raw["player_win"] != won:
         notes.append("The site's own player_win flag disagrees with its winner; the winner is used.")
 
-    games, game_notes = _games(raw, side)
     notes.extend(game_notes)
     if status == "played" and not games:
         notes.append("No game scores were listed for a match marked as played.")
@@ -276,6 +279,12 @@ def _status(raw: dict[str, Any]) -> MatchStatus:
     if not name and code is None:
         return "played"
     return {"walkover": "walkover", "retired": "retired", "disqualified": "disqualified"}.get(name, "unknown")
+
+
+def _is_finished(raw: dict[str, Any]) -> bool:
+    """The site's ``match_state`` is "F" for a finished match ("N" for one not started); no state counts as finished."""
+    state = _clean_text(raw.get("match_state"))
+    return state is None or state.upper() == "F"
 
 
 def _is_bye(raw: dict[str, Any]) -> bool:

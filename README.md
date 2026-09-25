@@ -8,6 +8,7 @@ Type a badminton player's name and get, from [bwfbadminton.com](https://bwfbadmi
 | **Personal details** | Nationality, height (cm), playing hand (Right/Left). |
 | **Ranking** | Current rank and how many consecutive weeks the player has held it (plus since when). |
 | **Tournament history** | Every tournament the player entered in the last year, and for each: the **result** (`1st`, `QF`, `R16`, ...), **who they played with** (doubles partner), **who they played against**, and the **points of every game**. Saved to a SQLite database and CSV files; running it again never duplicates anything. |
+| **Deep dive** | For one player's year, from the saved data: tournaments entered, rests and time on tour, how often each round was reached, wins in two and in three games, and whether long runs of consecutive points go with winning (with a permutation p-value and a check that it is not just the points). Notebook section 7. |
 | **Game details** | For every played match, what the site's match page shows: the **Match tab** and every **Game tab** (game points, most consecutive points, total points played and won) and the **score after every rally**, with built-in consistency checks. Downloaded with the history by default, saved in the same database and CSV files. |
 
 A value the site does not list is `null`, with a note explaining it. A missing field never fails the whole request.
@@ -20,7 +21,7 @@ python -m venv .venv
 pip install -e ".[dev,notebook]"   # "notebook" adds what is needed to run the notebook
 ```
 
-**Notebook:** open [notebook.ipynb](notebook.ipynb) (VS Code or Jupyter), set `PLAYER_NAME`, run all cells. Section 4 downloads the last year's history with the game details of every match, section 5 shows the Match and Game tabs of one match, and section 6 compares two players (Jonatan Christie and An Se Young) with SQL on the saved data. The notebook keeps its own database (`data/bwf_notebook.sqlite`). The committed notebook already contains a run, so you can read the results without running anything.
+**Notebook:** open [notebook.ipynb](notebook.ipynb) (VS Code or Jupyter), set `PLAYER_NAME`, run all cells. Section 4 downloads the last year's history with the game details of every match, section 5 shows the Match and Game tabs of one match, section 6 compares two players (Jonatan Christie and An Se Young) with SQL on the saved data, and section 7 is a deep dive into one player's year. The notebook keeps its own database (`data/bwf_notebook.sqlite`). The committed notebook already contains a run, so you can read the results without running anything.
 
 **Command line:** the whole history download in one command.
 
@@ -139,7 +140,7 @@ con.execute("""SELECT match_date, tournament, round, won, partner, opponent_1, o
 | `game_stats.csv` | game with saved details | the Game tabs: points, `total_points_played`, and the same statistics per game |
 | `rallies.csv` | rally | the score after every rally (`player_points`, `opponent_points`, `rally_won_by_player`) |
 
-`status` is `played`, `bye` (the player advanced without playing; the site counts it as a match won, `won` is empty), `walkover`, `retired` (the partial game is kept) or `disqualified`. Filter `status = 'played'` for matches that were really played. Column and table details: PRD section 10.
+`status` is `played`, `bye` (the player advanced without playing; the site counts it as a match won, `won` is empty), `walkover`, `retired` (the partial game is kept), `disqualified`, `scheduled` (not played yet: planned date, no result) or `in_progress`. Filter `status = 'played'` for matches that were really played. Column and table details: PRD section 10.
 
 ## Game details of one match (Match tab, Game 1, Game 2, ...)
 
@@ -200,6 +201,31 @@ with HistoryStore("data/bwf_history.sqlite") as store:
 ```
 
 An existing database from before this feature is upgraded automatically when it is opened; nothing in it is lost.
+
+## Deep dive into one player's year
+
+`bwf_player.analysis` answers five questions from the saved database (it never calls the site). Notebook section 7 runs them for the player of section 4; in Python:
+
+```python
+import sqlite3
+from bwf_player.analysis import deep_dive, format_activity, format_round_progress, format_game_split, format_run_correlation
+
+con = sqlite3.connect("data/bwf_notebook.sqlite")
+dive = deep_dive(con, 73442, since, until)          # count, activity, rounds, games, runs_by_match, runs_by_game
+print(format_round_progress(dive.rounds))
+```
+
+Real results for Jonatan Christie, 2025-09-26 to 2026-09-26 (the notebook's committed run; details and definitions: PRD section 12):
+
+| Question | Answer |
+|---|---|
+| Tournaments | **20** (18 individual, 2 team) |
+| Rest and time on tour | On tour 61 days (17% of the year); **18 rests**, average 16.8 days, longest 44 days; 5 rests shorter than a week, 3 of 28 days or more |
+| Rounds (17 knockout events) | R64 2, R32 **17**, R16 **13**, QF **9**, SF **6**, Final **5**; **champion 3 times**, runner-up 2 (plus team events and a group stage listed apart) |
+| Games | 59 matches: **won 38** (22 in two games, 16 in three), lost 21 (7 in three, 14 in two); won 16 of 23 three-game matches |
+| Runs and winning | Positive: r = 0.46 per match, 0.69 per game, both far from chance; the player with the longer run won 86.7% of matches and 94.1% of games. But it is mostly the points: with the points balance taken out the correlation is about zero (-0.33 per match, -0.09 per game) |
+
+Every answer is checked in the tests by recomputing it a different way. One player and one year is a small sample, so small differences mean little.
 
 ## Player lookup (name to details and ranking)
 
@@ -282,7 +308,7 @@ data/            the downloaded database and CSV files (created on first use, gi
 ## Tests
 
 ```bash
-pytest                                # offline suite (default; no network): 835 tests
+pytest                                # offline suite (default; no network): 905 tests
 pytest -m live                        # live smoke tests against bwfbadminton.com: 20 tests, about 5 minutes (one does the full real download)
 python scripts/save_test_results.py   # both suites -> test_results/latest.txt
 python scripts/execute_notebook.py    # re-run the notebook and save its outputs
@@ -294,7 +320,7 @@ python scripts/execute_notebook.py    # re-run the notebook and save its outputs
 - **Unofficial API.** It is the site's own front-end API, undocumented, and may change without notice. **The site's terms and conditions have not been reviewed**; check them before any use beyond personal research.
 - **Search limits.** A typo inside a one-word query ("cristie") is not matched. A typo'd name for a player missing from the site's player list (e.g. Kento Momota) is not found. A reversed name for such a player, when its words are common, may fail ("Dan Lin" does not find "LIN Dan"). Details and workarounds: PRD section 8. To avoid the search, pass the player id.
 - **Ranking events.** The result reports the first event the site lists (usually singles); others are in `other_events`.
-- **Tournament history.** One player at a time. Para tournaments are not covered. The category is `null` for tournaments the site's calendar gives none (62 of the 326 in the last year's calendar; none for Christie's). Disqualifications and matches still in progress are handled defensively but were not present in the real data used for testing. `position` is the site's own label and is `null` for team events, which have none.
+- **Tournament history.** One player at a time. Para tournaments are not covered. The category is `null` for tournaments the site's calendar gives none (62 of the 326 in the last year's calendar; none for Christie's). Disqualifications are handled defensively but were not present in the real data used for testing. A match not played yet (seen on the ongoing Asian Games, September 2026) is stored as `scheduled` with no result and counts as neither win nor loss; a started but unfinished match would be `in_progress` (not seen yet). `position` is the site's own label and is `null` for team events, which have none.
 - **Stored data.** The database keeps everything you have saved; saving again updates rows but never deletes any, so a match the site later removes stays in the file. The view `player_match_view` lists only players whose own history you downloaded (opponents are in `players` and `match_players`).
 - **Unknown id vs never ranked.** The site answers both the same way, so both come back as "no ranking events".
 

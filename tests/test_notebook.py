@@ -89,3 +89,34 @@ def test_shows_two_players_side_by_side(notebook: dict) -> None:
     ):
         assert expected in output, expected
     assert "Traceback" not in output
+
+
+def _all_output(notebook: dict) -> str:
+    return "".join("".join(o.get("text", "")) for cell in code_cells(notebook) for o in cell["outputs"])
+
+
+def test_shows_the_deep_dive_answers(notebook: dict) -> None:
+    output = _all_output(notebook)
+    for expected in (
+        "Deep dive:", "Tournaments entered:", "Rests between tournaments:", "Average rest:", "On tour (first to last match",
+        "Individual knockout events:", "Reached the final:", "Played matches (best of three):", "Won in 2 games (2-0):",
+        "Won in 3 games (2-1):", "=== Per match ===", "=== Per game ===", "permutation p-value:", "Partial correlation",
+    ):
+        assert expected in output, expected
+    assert "Traceback" not in output
+
+
+def test_the_round_funnel_in_the_notebook_adds_up(notebook: dict) -> None:
+    """reached == won + lost (+ not played yet) in every round of the printed table."""
+    import re
+
+    rows = []
+    for line in _all_output(notebook).splitlines():
+        match = re.match(r"^(R128|R64|R32|R16|QF|SF|Final)\s+(\d+)\s+(\d+)\s+(\d+)(?:\s+(\d+))?\s*#*\s*$", line)
+        if match:
+            reached, won, lost = (int(match.group(i)) for i in (2, 3, 4))
+            pending = int(match.group(5)) if match.group(5) else 0
+            rows.append((match.group(1), reached, won, lost, pending))
+    assert [r[0] for r in rows][-6:] == ["R64", "R32", "R16", "QF", "SF", "Final"]
+    for name, reached, won, lost, pending in rows:
+        assert reached == won + lost + pending, (name, reached, won, lost, pending)

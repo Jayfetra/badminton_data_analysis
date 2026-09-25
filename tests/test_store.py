@@ -447,3 +447,20 @@ def test_export_replaces_existing_files_and_is_repeatable(christie: HistoryStore
 def test_export_of_an_empty_database_has_only_headers(store: HistoryStore, tmp_path: Path) -> None:
     for path in store.export_csv(tmp_path).values():
         assert len(path.read_text(encoding="utf-8-sig").splitlines()) == 1
+
+
+def test_a_scheduled_match_is_stored_without_a_winner(store: HistoryStore) -> None:
+    from bwf_player.matches import parse_matches
+    from bwf_player.models import TournamentEntry
+
+    matches, _ = parse_matches(load_fixture("matches_73442_5874_29880.json"), CHRISTIE, 5874)
+    entry = TournamentEntry(tournament_id=5874, name="Asian Games (Individual)", start_date=date(2026, 9, 25),
+                            end_date=date(2026, 9, 29), event_code="MS", event_id=29880, position="R32")
+    store.save_tournaments(TournamentHistory(player_id=str(CHRISTIE), since=entry.start_date, until=entry.end_date, entries=[entry]),
+                           player_name="Jonatan CHRISTIE")
+    store.save_matches(EventMatches(tournament_id=5874, event_code="MS", event_id=29880, matches=matches))
+    assert _rows(store, "SELECT round, status, winner_side, match_date, match_code FROM matches ORDER BY round") == [
+        ("R32", "scheduled", None, "2026-09-26", "16"), ("R64", "bye", None, None, "32")]
+    assert _rows(store, "SELECT round, won, games, status FROM player_match_view ORDER BY round") == [
+        ("R32", None, None, "scheduled"), ("R64", None, None, "bye")]
+    assert store.counts()["games"] == 0

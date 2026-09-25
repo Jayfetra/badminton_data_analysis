@@ -115,7 +115,7 @@ class TournamentHistory(BaseModel):
     notes: list[str] = Field(default_factory=list)
 
 
-MatchStatus = Literal["played", "bye", "walkover", "retired", "disqualified", "unknown"]
+MatchStatus = Literal["played", "bye", "walkover", "retired", "disqualified", "scheduled", "in_progress", "unknown"]
 
 
 class MatchPlayer(BaseModel):
@@ -142,6 +142,9 @@ class PlayerMatch(BaseModel):
     record, which is what the database keeps. `won` is None for a bye (nobody was played) and if
     the site's winner is unusable. `games` is empty for a bye and a walkover; a retirement keeps the
     points of the game in progress. Filter `status == "played"` for matches that were really played.
+    `scheduled` is a match that has not started (the site's `match_state` is not "F"; `match_date` is its
+    planned day, there is no winner and no game) and `in_progress` one that has started but is not
+    finished; neither counts as a win or a loss.
     `match_code` is the site's number of the match within its tournament (the `match/13` of the
     match page URL); with the tournament id it addresses the match's game details.
     `notes` holds anything odd about this one match.

@@ -1,5 +1,36 @@
 # PRD Changelog
 
+## Iteration 12 — 2026-09-25/26 (R9: deep-dive analysis; matches not played yet)
+
+**What changed**
+- New `bwf_player/analysis.py` (R9): `count_tournaments`, `activity`, `round_progress`, `game_split`, `run_correlation` (per match and per game), `deep_dive`, the statistics helpers (`pearson`, `permutation_p_value`, `partial_correlation`, `describe_correlation`) and text formatters. It reads the saved database only. Definitions and the real results for Jonatan Christie are in PRD section 12.
+- Notebook section 7 ("Deep dive into one player's year"): the five questions, for the player of section 4; committed **with all 22 code cells executed** (a `CLAUDE.md` rule added the same day: the notebook is always delivered fully executed).
+- **Matches not played yet** (found by running the deep dive on 2026-09-25): new match statuses `scheduled` and `in_progress`, decided by the site's `match_state` ("F" finished, "N" not started). Parser, report (`not played yet (2026-09-26)`), storage, `details_targets` and the analysis handle them; the analysis shows a `pending` column in the round funnel.
+- `CLAUDE.md` (working agreements) and a memory note added.
+- Report wording made neutral ("the player") so it is right for any player.
+- Earlier-iteration code touched: `models.py` (two statuses), `matches.py` (state handling), `history.py` (report text and the "not requested" label), tests (`test_live.py`: three live tests made deterministic).
+
+**Why**
+- The owner asked for a deep dive on Christie's year (tournaments, rests, rounds, two- and three-game wins, runs vs winning), starting with Christie.
+
+**Bugs found by looking at the real output (all fixed)**
+1. **Wins/losses were 1/0 integers, and my code tested `is False`.** The first funnel showed "lost 0" everywhere and "runner-up 0" although he reached five finals; group-stage records read 0-0. Fixed (`== 0` / `== 1`); the round table is now checked for `reached = won + lost + pending` in the tests and, in the notebook guard, from its printed output.
+2. **A tournament that overlaps the window only by its schedule** (China Masters 2025, scheduled to 21 Sep, all matches on 17-18 Sep) created a "rest" starting before the window. Activity now counts only tournaments where the player played inside the window, and says which it left out. Found by the fixture tests, not the live data.
+3. **A match not played yet** (Asian Games 2026 individual, `match_state` "N") was stored as `played` with no winner and no games, which broke the round table (17 reached, 13 + 3 won or lost) and triggered a details request for a match that had not happened. Now `scheduled`, with a real fixture.
+4. Tests that assumed "the latest tournament" is finished failed twice (the tournament under way has only a bye and a scheduled match). They now use fixed, finished tournaments.
+
+**What was tested (`test_results/latest.txt`, final regression)**
+- Offline: **905 passed** (835 before): 45 tests in `tests/test_analysis.py` (the five answers recomputed independently on the real fixtures; hand-worked synthetic calendars, funnels, game splits and correlations; helpers; text), 22 for matches not played yet and the analysis of them, and 3 in the notebook guard.
+- Live: **20 passed** in 4 min 43 s. An earlier run had 2 failures (bug 4 above); the final run is clean.
+- Notebook executed end to end in a real kernel: 22 code cells, no errors.
+
+**Findings (Christie; PRD section 12)**
+- (Figures of the committed notebook run, window 2025-09-26 to 2026-09-26; the window is rolling, so a day earlier on tour was 62 days.) 20 tournaments; on tour 61 days (17% of the year); 18 rests, average 16.8 days, longest 44; champion 3 times, runner-up 2; won 22 matches in two games and 16 in three; correlation of the run difference with winning r = 0.46 per match and 0.69 per game, both far from chance, but with the points balance taken out it is about nothing.
+- The site's own match states: "F" finished, "N" not started; the `in_progress` state has not been seen.
+
+**Corrections of earlier statements**
+- README and PRD said matches in progress had not appeared in the real data; a not-started match did on 2026-09-25 (PRD section 8, item 6; README limitations). An in-progress (started, unfinished) match still has not.
+
 ## Notebook update — 2026-09-24 (two players side by side)
 
 **What changed**
